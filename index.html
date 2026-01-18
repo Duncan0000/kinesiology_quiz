@@ -1,43 +1,93 @@
-import React, { useState, useEffect } from 'react';
-import { Clock, ChevronLeft, ChevronRight, CheckCircle, XCircle, BookOpen, RotateCcw, Award } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMR讀書會 肩關節主題測驗</title>
+    <!-- 引入 Tailwind CSS (用於樣式) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Lucide Icons (用於圖示) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* 自定義動畫與樣式 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #0f172a; /* slate-900 */
+            color: #f1f5f9; /* slate-100 */
+        }
 
-// --- 題目資料庫 (50題) ---
-const FULL_QUESTION_BANK = [
-  // 基礎骨骼與關節
-  {
-    id: 1,
-    question: "上肢與中軸骨骼之間唯一的骨骼附著點是哪個關節？",
-    options: ["肩峰鎖骨關節 (AC Joint)", "胸鎖關節 (SC Joint)", "盂肱關節 (GH Joint)", "肩胛胸廓關節 (ST Joint)"],
-    correctAnswer: "胸鎖關節 (SC Joint)",
-    explanation: "胸鎖關節 (Sternoclavicular Joint) 是鎖骨內側與胸骨形成的關節，是上肢連接到中軸骨的唯一骨性連結。"
-  },
-  {
-    id: 2,
-    question: "關於盂肱關節 (GH Joint) 的敘述，何者正確？",
-    options: ["屬於馬鞍關節", "主要穩定性來自骨骼結構", "屬於球窩關節，允許三個自由度", "關節囊非常緊繃以提供穩定性"],
-    correctAnswer: "屬於球窩關節，允許三個自由度",
-    explanation: "盂肱關節是球窩關節 (Ball-and-socket)，活動度極高但骨骼穩定性低，主要依賴軟組織穩定。"
-  },
-  {
-    id: 3,
-    question: "下列哪一個構造形成了肩關節的「功能性屋頂」，保護下方的肱骨頭？",
-    options: ["喙突 (Coracoid process)", "肩峰 (Acromion)", "喙突肩峰弓 (Coracoacromial arch)", "鎖骨 (Clavicle)"],
-    correctAnswer: "喙突肩峰弓 (Coracoacromial arch)",
-    explanation: "喙突肩峰韌帶連接喙突與肩峰，形成喙突肩峰弓，防止肱骨頭過度向上位移。"
-  },
-  {
-    id: 4,
-    question: "鎖骨呈S形，其外側端（肩峰端）是什麼形狀？",
-    options: ["圓形且凸出", "平坦", "尖銳", "球狀"],
-    correctAnswer: "平坦",
-    explanation: "鎖骨外側端（肩峰端）通常較為平坦，與肩胛骨的肩峰形成肩峰鎖骨關節。"
-  },
-  {
-    id: 5,
-    question: "肱骨頭的大結節 (Greater Tubercle) 位於何處？",
-    options: ["內側", "外側", "下方", "後下方"],
-    correctAnswer: "外側",
-    explanation: "大結節位於肱骨頭外側，是棘上肌、棘下肌和小圓肌的附著點。"
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 滾動條樣式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- App 容器 -->
+    <div id="app" class="flex-grow flex flex-col relative overflow-x-hidden">
+        <!-- 內容將由 JavaScript 動態渲染 -->
+    </div>
+
+    <script>
+        // --- 題目資料庫 (50題) ---
+        const FULL_QUESTION_BANK = [
+          // 基礎骨骼與關節
+          {
+            id: 1,
+            question: "上肢與中軸骨骼之間唯一的骨骼附著點是哪個關節？",
+            options: ["肩峰鎖骨關節 (AC Joint)", "胸鎖關節 (SC Joint)", "盂肱關節 (GH Joint)", "肩胛胸廓關節 (ST Joint)"],
+            correctAnswer: "胸鎖關節 (SC Joint)",
+            explanation: "胸鎖關節 (Sternoclavicular Joint) 是鎖骨內側與胸骨形成的關節，是上肢連接到中軸骨的唯一骨性連結。"
+          },
+          {
+            id: 2,
+            question: "關於盂肱關節 (GH Joint) 的敘述，何者正確？",
+            options: ["屬於馬鞍關節", "主要穩定性來自骨骼結構", "屬於球窩關節，允許三個自由度", "關節囊非常緊繃以提供穩定性"],
+            correctAnswer: "屬於球窩關節，允許三個自由度",
+            explanation: "盂肱關節是球窩關節 (Ball-and-socket)，活動度極高但骨骼穩定性低，主要依賴軟組織穩定。"
+          },
+          {
+            id: 3,
+            question: "下列哪一個構造形成了肩關節的「功能性屋頂」，保護下方的肱骨頭？",
+            options: ["喙突 (Coracoid process)", "肩峰 (Acromion)", "喙突肩峰弓 (Coracoacromial arch)", "鎖骨 (Clavicle)"],
+            correctAnswer: "喙突肩峰弓 (Coracoacromial arch)",
+            explanation: "喙突肩峰韌帶連接喙突與肩峰，形成喙突肩峰弓，防止肱骨頭過度向上位移。"
+          },
+          {
+            id: 4,
+            question: "鎖骨呈S形，其外側端（肩峰端）是什麼形狀？",
+            options: ["圓形且凸出", "平坦", "尖銳", "球狀"],
+            correctAnswer: "平坦",
+            explanation: "鎖骨外側端（肩峰端）通常較為平坦，與肩胛骨的肩峰形成肩峰鎖骨關節。"
+          },
+          {
+            id: 5,
+            question: "肱骨頭的大結節 (Greater Tubercle) 位於何處？",
+            options: ["內側", "外側", "下方", "後下方"],
+            correctAnswer: "外側",
+            explanation: "大結節位於肱骨頭外側，是棘上肌、棘下肌和小圓肌的附著點。"
   },
   
   // 韌帶與穩定結構
@@ -364,325 +414,329 @@ const FULL_QUESTION_BANK = [
   }
 ];
 
-// --- 輔助函式 ---
-const shuffleArray = (array) => {
-  const newArray = [...array];
-  for (let i = newArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-  }
-  return newArray;
-};
+        // --- 全局變數 ---
+        let appState = 'home'; // home, quiz, result
+        let questions = [];
+        let currentQIndex = 0;
+        let userAnswers = {}; // { questionId: selectedOptionString }
+        let timeLeft = 3600; // 1 hour
+        let timerInterval = null;
+        let score = 0;
 
-// 產生帶有隨機選項的題目物件
-const generateQuizSession = () => {
-  // 1. 隨機選 10 題
-  const selectedQuestions = shuffleArray(FULL_QUESTION_BANK).slice(0, 10);
-  
-  // 2. 對每一題的選項進行隨機排列
-  return selectedQuestions.map(q => {
-    const shuffledOptions = shuffleArray(q.options);
-    return {
-      ...q,
-      shuffledOptions, // 使用隨機排列後的選項
-      originalIndexMap: q.options.map(opt => shuffledOptions.indexOf(opt)) // 用於追蹤答案（如果需要，但這裡直接比對字串即可）
-    };
-  });
-};
+        // --- 輔助函式 ---
+        const shuffleArray = (array) => {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        };
 
-const App = () => {
-  const [appState, setAppState] = useState('home'); // home, quiz, result
-  const [questions, setQuestions] = useState([]);
-  const [currentQIndex, setCurrentQIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState({}); // { questionId: selectedOptionString }
-  const [timeLeft, setTimeLeft] = useState(3600); // 1 hour in seconds
-  const [score, setScore] = useState(0);
+        const generateQuizSession = () => {
+            const selectedQuestions = shuffleArray(FULL_QUESTION_BANK).slice(0, 10);
+            return selectedQuestions.map(q => {
+                const shuffledOptions = shuffleArray(q.options);
+                return {
+                    ...q,
+                    shuffledOptions
+                };
+            });
+        };
 
-  // 計時器
-  useEffect(() => {
-    let timer;
-    if (appState === 'quiz' && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft(prev => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0 && appState === 'quiz') {
-      submitQuiz();
-    }
-    return () => clearInterval(timer);
-  }, [appState, timeLeft]);
+        const formatTime = (seconds) => {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        };
 
-  const startQuiz = () => {
-    const newSession = generateQuizSession();
-    setQuestions(newSession);
-    setCurrentQIndex(0);
-    setUserAnswers({});
-    setTimeLeft(3600);
-    setScore(0);
-    setAppState('quiz');
-  };
+        // --- 邏輯控制 ---
 
-  const handleOptionSelect = (option) => {
-    const currentQ = questions[currentQIndex];
-    setUserAnswers(prev => ({
-      ...prev,
-      [currentQ.id]: option
-    }));
-  };
+        function startQuiz() {
+            questions = generateQuizSession();
+            currentQIndex = 0;
+            userAnswers = {};
+            timeLeft = 3600;
+            score = 0;
+            appState = 'quiz';
+            
+            // 啟動計時器
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    submitQuiz();
+                }
+            }, 1000);
 
-  const nextQuestion = () => {
-    if (currentQIndex < questions.length - 1) {
-      setCurrentQIndex(prev => prev + 1);
-    }
-  };
+            render();
+        }
 
-  const prevQuestion = () => {
-    if (currentQIndex > 0) {
-      setCurrentQIndex(prev => prev - 1);
-    }
-  };
+        function handleOptionSelect(option) {
+            const currentQ = questions[currentQIndex];
+            userAnswers[currentQ.id] = option;
+            render(); // 重新渲染以顯示選中狀態
+        }
 
-  const submitQuiz = () => {
-    // 計算分數
-    let correctCount = 0;
-    questions.forEach(q => {
-      if (userAnswers[q.id] === q.correctAnswer) {
-        correctCount++;
-      }
-    });
-    setScore(correctCount);
-    setAppState('result');
-  };
+        function nextQuestion() {
+            if (currentQIndex < questions.length - 1) {
+                currentQIndex++;
+                render();
+            }
+        }
 
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  };
+        function prevQuestion() {
+            if (currentQIndex > 0) {
+                currentQIndex--;
+                render();
+            }
+        }
 
-  // --- 畫面渲染 ---
+        function submitQuiz() {
+            clearInterval(timerInterval);
+            let correctCount = 0;
+            questions.forEach(q => {
+                if (userAnswers[q.id] === q.correctAnswer) {
+                    correctCount++;
+                }
+            });
+            score = correctCount;
+            appState = 'result';
+            render();
+            // 滾動到頂部
+            window.scrollTo(0, 0);
+        }
 
-  // 1. 首頁
-  if (appState === 'home') {
-    return (
-      <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col items-center justify-center p-4">
-        <div className="max-w-2xl w-full bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 text-center space-y-8">
-          <div className="space-y-4">
-            <div className="flex justify-center">
-              <BookOpen size={64} className="text-blue-400" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400 py-2">
-              SMR讀書會<br />肩關節主題測驗
-            </h1>
-            <p className="text-slate-400 text-lg">
-              本測驗共 50 題題庫，每次隨機抽選 10 題。<br />
-              包含計時功能，請在時間內完成作答。
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left bg-slate-900/50 p-6 rounded-xl border border-slate-700">
-            <div className="flex items-center space-x-3">
-              <div className="bg-blue-500/20 p-2 rounded-lg text-blue-400"><Clock size={20}/></div>
-              <div>
-                <p className="text-sm text-slate-500">限時</p>
-                <p className="font-semibold">1 小時</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="bg-teal-500/20 p-2 rounded-lg text-teal-400"><BookOpen size={20}/></div>
-              <div>
-                <p className="text-sm text-slate-500">題數</p>
-                <p className="font-semibold">10 題</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="bg-purple-500/20 p-2 rounded-lg text-purple-400"><Award size={20}/></div>
-              <div>
-                <p className="text-sm text-slate-500">及格</p>
-                <p className="font-semibold">60 分</p>
-              </div>
-            </div>
-          </div>
+        function updateTimerDisplay() {
+            const timerEl = document.getElementById('timer-display');
+            if (timerEl) {
+                timerEl.textContent = formatTime(timeLeft);
+                if (timeLeft < 60) {
+                    timerEl.classList.add('text-red-400', 'animate-pulse');
+                    timerEl.classList.remove('text-teal-400');
+                }
+            }
+        }
 
-          <button 
-            onClick={startQuiz}
-            className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-500 hover:to-teal-500 text-white text-2xl font-bold py-4 rounded-xl transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-blue-500/25"
-          >
-            開始測驗
-          </button>
-        </div>
-      </div>
-    );
-  }
+        // --- 渲染 (View) ---
 
-  // 2. 測驗頁面
-  if (appState === 'quiz') {
-    const currentQ = questions[currentQIndex];
-    const progress = ((currentQIndex + 1) / questions.length) * 100;
-    const isLastQuestion = currentQIndex === questions.length - 1;
+        function render() {
+            const app = document.getElementById('app');
+            app.innerHTML = ''; // 清空
 
-    return (
-      <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col items-center p-4 md:p-8">
-        {/* Header Bar */}
-        <div className="w-full max-w-3xl flex justify-between items-center mb-6 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
-          <div className="text-slate-400 font-medium">
-            第 <span className="text-blue-400 text-xl font-bold">{currentQIndex + 1}</span> / {questions.length} 題
-          </div>
-          <div className={`flex items-center font-mono text-xl font-bold ${timeLeft < 60 ? 'text-red-400 animate-pulse' : 'text-teal-400'}`}>
-            <Clock size={24} className="mr-2" />
-            {formatTime(timeLeft)}
-          </div>
-        </div>
+            if (appState === 'home') {
+                renderHome(app);
+            } else if (appState === 'quiz') {
+                renderQuiz(app);
+            } else if (appState === 'result') {
+                renderResult(app);
+            }
+            // 初始化圖示
+            lucide.createIcons();
+        }
 
-        {/* Progress Bar */}
-        <div className="w-full max-w-3xl h-2 bg-slate-800 rounded-full mb-8 overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-blue-500 to-teal-400 transition-all duration-300 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-
-        {/* Question Card */}
-        <div className="w-full max-w-3xl bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-6 md:p-10 flex-grow flex flex-col relative overflow-hidden">
-          {/* Background decoration */}
-          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
-          
-          <h2 className="text-2xl md:text-3xl font-bold leading-relaxed mb-8 text-slate-100 relative z-10">
-            {currentQ.question}
-          </h2>
-
-          <div className="space-y-4 relative z-10 flex-grow">
-            {currentQ.shuffledOptions.map((option, idx) => {
-              const isSelected = userAnswers[currentQ.id] === option;
-              return (
-                <button
-                  key={idx}
-                  onClick={() => handleOptionSelect(option)}
-                  className={`w-full text-left p-5 rounded-xl text-xl transition-all duration-200 border-2 flex items-center group
-                    ${isSelected 
-                      ? 'bg-blue-600/20 border-blue-500 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)]' 
-                      : 'bg-slate-700/50 border-transparent hover:bg-slate-700 hover:border-slate-600 text-slate-300'
-                    }`}
-                >
-                  <div className={`w-8 h-8 rounded-full border-2 mr-4 flex items-center justify-center flex-shrink-0 transition-colors
-                    ${isSelected ? 'border-blue-400 bg-blue-500 text-white' : 'border-slate-500 text-transparent group-hover:border-slate-400'}`}>
-                    {isSelected && <div className="w-3 h-3 bg-white rounded-full"></div>}
-                  </div>
-                  {option}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Navigation */}
-          <div className="flex justify-between items-center mt-8 pt-8 border-t border-slate-700 relative z-10">
-            <button
-              onClick={prevQuestion}
-              disabled={currentQIndex === 0}
-              className={`flex items-center px-6 py-3 rounded-lg text-lg font-medium transition-colors
-                ${currentQIndex === 0 
-                  ? 'text-slate-600 cursor-not-allowed' 
-                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                }`}
-            >
-              <ChevronLeft size={24} className="mr-1" /> 上一題
-            </button>
-
-            {isLastQuestion ? (
-              <button
-                onClick={submitQuiz}
-                className="flex items-center px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-lg font-bold shadow-lg shadow-green-500/25 transition-all transform hover:scale-105"
-              >
-                繳交試卷 <CheckCircle size={24} className="ml-2" />
-              </button>
-            ) : (
-              <button
-                onClick={nextQuestion}
-                className="flex items-center px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-lg font-medium transition-colors"
-              >
-                下一題 <ChevronRight size={24} className="ml-1" />
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // 3. 結果頁面
-  if (appState === 'result') {
-    const percentage = Math.round((score / questions.length) * 100);
-    
-    return (
-      <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8">
-        <div className="max-w-4xl mx-auto space-y-8">
-          
-          {/* Score Card */}
-          <div className="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 text-center relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-teal-400"></div>
-            <h2 className="text-3xl font-bold text-slate-300 mb-2">測驗結果</h2>
-            <div className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-400 to-teal-400 my-6">
-              {score * 10} <span className="text-2xl text-slate-500 font-medium">分</span>
-            </div>
-            <p className="text-xl text-slate-400 mb-8">
-              答對 {score} / {questions.length} 題
-            </p>
-            <button
-              onClick={startQuiz}
-              className="inline-flex items-center px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-blue-500/25"
-            >
-              <RotateCcw size={20} className="mr-2" /> 重新測驗
-            </button>
-          </div>
-
-          {/* Detailed Review */}
-          <div className="space-y-6">
-            <h3 className="text-2xl font-bold text-slate-300 px-2 border-l-4 border-blue-500">詳細解析</h3>
-            {questions.map((q, idx) => {
-              const userAnswer = userAnswers[q.id];
-              const isCorrect = userAnswer === q.correctAnswer;
-              
-              return (
-                <div key={q.id} className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
-                  <div className={`p-4 flex items-start gap-4 ${isCorrect ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
-                    <div className="mt-1 flex-shrink-0">
-                      {isCorrect ? <CheckCircle className="text-green-400" size={24} /> : <XCircle className="text-red-400" size={24} />}
-                    </div>
-                    <div className="flex-grow">
-                      <h4 className="text-lg font-bold text-slate-200 mb-4">
-                        <span className="text-slate-500 mr-2">{idx + 1}.</span>
-                        {q.question}
-                      </h4>
-                      
-                      <div className="space-y-2 mb-4">
-                        <div className={`p-3 rounded-lg flex items-center ${isCorrect ? 'bg-green-500/20 text-green-200' : 'bg-red-500/20 text-red-200'}`}>
-                          <span className="text-sm font-bold w-16 opacity-70">您的回答</span>
-                          <span>{userAnswer || "(未作答)"}</span>
+        function renderHome(container) {
+            container.innerHTML = `
+                <div class="min-h-screen flex flex-col items-center justify-center p-4 fade-in">
+                    <div class="max-w-2xl w-full bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 text-center space-y-8">
+                        <div class="space-y-4">
+                            <div class="flex justify-center">
+                                <i data-lucide="book-open" class="w-16 h-16 text-blue-400"></i>
+                            </div>
+                            <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400 py-2">
+                                SMR讀書會<br />肩關節主題測驗
+                            </h1>
+                            <p class="text-slate-400 text-lg">
+                                本測驗共 50 題題庫，每次隨機抽選 10 題。<br />
+                                包含計時功能，請在時間內完成作答。
+                            </p>
                         </div>
-                        {!isCorrect && (
-                          <div className="p-3 rounded-lg bg-green-500/20 text-green-200 flex items-center">
-                            <span className="text-sm font-bold w-16 opacity-70">正確答案</span>
-                            <span>{q.correctAnswer}</span>
-                          </div>
-                        )}
-                      </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left bg-slate-900/50 p-6 rounded-xl border border-slate-700">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-blue-500/20 p-2 rounded-lg text-blue-400"><i data-lucide="clock" class="w-5 h-5"></i></div>
+                                <div>
+                                    <p class="text-sm text-slate-500">限時</p>
+                                    <p class="font-semibold">1 小時</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-teal-500/20 p-2 rounded-lg text-teal-400"><i data-lucide="book-open" class="w-5 h-5"></i></div>
+                                <div>
+                                    <p class="text-sm text-slate-500">題數</p>
+                                    <p class="font-semibold">10 題</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-purple-500/20 p-2 rounded-lg text-purple-400"><i data-lucide="award" class="w-5 h-5"></i></div>
+                                <div>
+                                    <p class="text-sm text-slate-500">及格</p>
+                                    <p class="font-semibold">60 分</p>
+                                </div>
+                            </div>
+                        </div>
 
-                      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
-                        <p className="text-sm text-blue-300 font-bold mb-1">解析：</p>
-                        <p className="text-slate-300 leading-relaxed">{q.explanation}</p>
-                      </div>
+                        <button onclick="startQuiz()" class="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-500 hover:to-teal-500 text-white text-2xl font-bold py-4 rounded-xl transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-blue-500/25">
+                            開始測驗
+                        </button>
                     </div>
-                  </div>
                 </div>
-              );
-            })}
-          </div>
+            `;
+        }
 
-        </div>
-      </div>
-    );
-  }
+        function renderQuiz(container) {
+            const currentQ = questions[currentQIndex];
+            const progress = ((currentQIndex + 1) / questions.length) * 100;
+            const isLastQuestion = currentQIndex === questions.length - 1;
 
-  return null;
-};
+            let optionsHtml = currentQ.shuffledOptions.map((option) => {
+                const isSelected = userAnswers[currentQ.id] === option;
+                const buttonClass = isSelected 
+                    ? 'bg-blue-600/20 border-blue-500 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)]' 
+                    : 'bg-slate-700/50 border-transparent hover:bg-slate-700 hover:border-slate-600 text-slate-300';
+                
+                const circleClass = isSelected
+                    ? 'border-blue-400 bg-blue-500 text-white'
+                    : 'border-slate-500 text-transparent group-hover:border-slate-400';
 
-export default App;
+                return `
+                    <button onclick="handleOptionSelect('${option.replace(/'/g, "\\'")}')" class="w-full text-left p-5 rounded-xl text-xl transition-all duration-200 border-2 flex items-center group ${buttonClass}">
+                        <div class="w-8 h-8 rounded-full border-2 mr-4 flex items-center justify-center flex-shrink-0 transition-colors ${circleClass}">
+                            ${isSelected ? '<div class="w-3 h-3 bg-white rounded-full"></div>' : ''}
+                        </div>
+                        ${option}
+                    </button>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="min-h-screen flex flex-col items-center p-4 md:p-8 fade-in">
+                    <!-- Header -->
+                    <div class="w-full max-w-3xl flex justify-between items-center mb-6 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
+                        <div class="text-slate-400 font-medium">
+                            第 <span class="text-blue-400 text-xl font-bold">${currentQIndex + 1}</span> / ${questions.length} 題
+                        </div>
+                        <div class="flex items-center font-mono text-xl font-bold text-teal-400">
+                            <i data-lucide="clock" class="w-6 h-6 mr-2"></i>
+                            <span id="timer-display">${formatTime(timeLeft)}</span>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full max-w-3xl h-2 bg-slate-800 rounded-full mb-8 overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-blue-500 to-teal-400 transition-all duration-300 ease-out" style="width: ${progress}%"></div>
+                    </div>
+
+                    <!-- Question Card -->
+                    <div class="w-full max-w-3xl bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-6 md:p-10 flex-grow flex flex-col relative overflow-hidden">
+                        <!-- Background decoration -->
+                        <div class="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+                        
+                        <h2 class="text-2xl md:text-3xl font-bold leading-relaxed mb-8 text-slate-100 relative z-10">
+                            ${currentQ.question}
+                        </h2>
+
+                        <div class="space-y-4 relative z-10 flex-grow">
+                            ${optionsHtml}
+                        </div>
+
+                        <!-- Navigation -->
+                        <div class="flex justify-between items-center mt-8 pt-8 border-t border-slate-700 relative z-10">
+                            <button onclick="prevQuestion()" ${currentQIndex === 0 ? 'disabled' : ''} class="flex items-center px-6 py-3 rounded-lg text-lg font-medium transition-colors ${currentQIndex === 0 ? 'text-slate-600 cursor-not-allowed' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}">
+                                <i data-lucide="chevron-left" class="w-6 h-6 mr-1"></i> 上一題
+                            </button>
+
+                            ${isLastQuestion ? `
+                                <button onclick="submitQuiz()" class="flex items-center px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-lg font-bold shadow-lg shadow-green-500/25 transition-all transform hover:scale-105">
+                                    繳交試卷 <i data-lucide="check-circle" class="w-6 h-6 ml-2"></i>
+                                </button>
+                            ` : `
+                                <button onclick="nextQuestion()" class="flex items-center px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-lg font-medium transition-colors">
+                                    下一題 <i data-lucide="chevron-right" class="w-6 h-6 ml-1"></i>
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderResult(container) {
+            let reviewHtml = questions.map((q, idx) => {
+                const userAnswer = userAnswers[q.id];
+                const isCorrect = userAnswer === q.correctAnswer;
+                
+                return `
+                    <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+                        <div class="p-4 flex items-start gap-4 ${isCorrect ? 'bg-green-500/10' : 'bg-red-500/10'}">
+                            <div class="mt-1 flex-shrink-0">
+                                ${isCorrect 
+                                    ? '<i data-lucide="check-circle" class="w-6 h-6 text-green-400"></i>' 
+                                    : '<i data-lucide="x-circle" class="w-6 h-6 text-red-400"></i>'}
+                            </div>
+                            <div class="flex-grow">
+                                <h4 class="text-lg font-bold text-slate-200 mb-4">
+                                    <span class="text-slate-500 mr-2">${idx + 1}.</span>
+                                    ${q.question}
+                                </h4>
+                                
+                                <div class="space-y-2 mb-4">
+                                    <div class="p-3 rounded-lg flex items-center ${isCorrect ? 'bg-green-500/20 text-green-200' : 'bg-red-500/20 text-red-200'}">
+                                        <span class="text-sm font-bold w-16 opacity-70">您的回答</span>
+                                        <span>${userAnswer || "(未作答)"}</span>
+                                    </div>
+                                    ${!isCorrect ? `
+                                    <div class="p-3 rounded-lg bg-green-500/20 text-green-200 flex items-center">
+                                        <span class="text-sm font-bold w-16 opacity-70">正確答案</span>
+                                        <span>${q.correctAnswer}</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+
+                                <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
+                                    <p class="text-sm text-blue-300 font-bold mb-1">解析：</p>
+                                    <p class="text-slate-300 leading-relaxed">${q.explanation}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8 fade-in">
+                    <div class="max-w-4xl mx-auto space-y-8">
+                        
+                        <!-- Score Card -->
+                        <div class="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 text-center relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-teal-400"></div>
+                            <h2 class="text-3xl font-bold text-slate-300 mb-2">測驗結果</h2>
+                            <div class="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-400 to-teal-400 my-6">
+                                ${score * 10} <span class="text-2xl text-slate-500 font-medium">分</span>
+                            </div>
+                            <p class="text-xl text-slate-400 mb-8">
+                                答對 ${score} / ${questions.length} 題
+                            </p>
+                            <button onclick="startQuiz()" class="inline-flex items-center px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-blue-500/25">
+                                <i data-lucide="rotate-ccw" class="w-5 h-5 mr-2"></i> 重新測驗
+                            </button>
+                        </div>
+
+                        <!-- Detailed Review -->
+                        <div class="space-y-6">
+                            <h3 class="text-2xl font-bold text-slate-300 px-2 border-l-4 border-blue-500">詳細解析</h3>
+                            ${reviewHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- 初始化 ---
+        render();
+
+    </script>
+</body>
+</html>
