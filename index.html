@@ -1,0 +1,688 @@
+import React, { useState, useEffect } from 'react';
+import { Clock, ChevronLeft, ChevronRight, CheckCircle, XCircle, BookOpen, RotateCcw, Award } from 'lucide-react';
+
+// --- 題目資料庫 (50題) ---
+const FULL_QUESTION_BANK = [
+  // 基礎骨骼與關節
+  {
+    id: 1,
+    question: "上肢與中軸骨骼之間唯一的骨骼附著點是哪個關節？",
+    options: ["肩峰鎖骨關節 (AC Joint)", "胸鎖關節 (SC Joint)", "盂肱關節 (GH Joint)", "肩胛胸廓關節 (ST Joint)"],
+    correctAnswer: "胸鎖關節 (SC Joint)",
+    explanation: "胸鎖關節 (Sternoclavicular Joint) 是鎖骨內側與胸骨形成的關節，是上肢連接到中軸骨的唯一骨性連結。"
+  },
+  {
+    id: 2,
+    question: "關於盂肱關節 (GH Joint) 的敘述，何者正確？",
+    options: ["屬於馬鞍關節", "主要穩定性來自骨骼結構", "屬於球窩關節，允許三個自由度", "關節囊非常緊繃以提供穩定性"],
+    correctAnswer: "屬於球窩關節，允許三個自由度",
+    explanation: "盂肱關節是球窩關節 (Ball-and-socket)，活動度極高但骨骼穩定性低，主要依賴軟組織穩定。"
+  },
+  {
+    id: 3,
+    question: "下列哪一個構造形成了肩關節的「功能性屋頂」，保護下方的肱骨頭？",
+    options: ["喙突 (Coracoid process)", "肩峰 (Acromion)", "喙突肩峰弓 (Coracoacromial arch)", "鎖骨 (Clavicle)"],
+    correctAnswer: "喙突肩峰弓 (Coracoacromial arch)",
+    explanation: "喙突肩峰韌帶連接喙突與肩峰，形成喙突肩峰弓，防止肱骨頭過度向上位移。"
+  },
+  {
+    id: 4,
+    question: "鎖骨呈S形，其外側端（肩峰端）是什麼形狀？",
+    options: ["圓形且凸出", "平坦", "尖銳", "球狀"],
+    correctAnswer: "平坦",
+    explanation: "鎖骨外側端（肩峰端）通常較為平坦，與肩胛骨的肩峰形成肩峰鎖骨關節。"
+  },
+  {
+    id: 5,
+    question: "肱骨頭的大結節 (Greater Tubercle) 位於何處？",
+    options: ["內側", "外側", "下方", "後下方"],
+    correctAnswer: "外側",
+    explanation: "大結節位於肱骨頭外側，是棘上肌、棘下肌和小圓肌的附著點。"
+  },
+  
+  // 韌帶與穩定結構
+  {
+    id: 6,
+    question: "盂唇 (Glenoid Labrum) 的主要功能是什麼？",
+    options: ["產生潤滑液", "加深盂窩深度並提供吸盤效應", "連接鎖骨與肩胛骨", "防止肩胛骨翼狀突出"],
+    correctAnswer: "加深盂窩深度並提供吸盤效應",
+    explanation: "盂唇是纖維軟骨環，可將盂窩深度加深約50%，並產生負壓吸吮效應以穩定肱骨頭。"
+  },
+  {
+    id: 7,
+    question: "哪一條韌帶包含圓錐韌帶 (Conoid) 與斜方韌帶 (Trapezoid)？",
+    options: ["喙肱韌帶", "肩峰鎖韌帶", "喙突鎖骨韌帶 (Coracoclavicular ligament)", "肋鎖韌帶"],
+    correctAnswer: "喙突鎖骨韌帶 (Coracoclavicular ligament)",
+    explanation: "喙突鎖骨韌帶包含兩束：圓錐韌帶與斜方韌帶，是懸吊肩胛骨並穩定鎖骨的重要結構。"
+  },
+  {
+    id: 8,
+    question: "投擲運動員常見的 SLAP 損傷 (Superior Labrum Anterior to Posterior) 通常涉及哪個構造？",
+    options: ["肱三頭肌長頭腱", "肱二頭肌長頭腱", "棘上肌肌腱", "胸小肌肌腱"],
+    correctAnswer: "肱二頭肌長頭腱",
+    explanation: "大約50%的肱二頭肌長頭肌腱纖維直接延伸自上盂唇，過大的拉力易導致 SLAP 損傷。"
+  },
+
+  // 運動學 (Kinematics)
+  {
+    id: 9,
+    question: "正常的「肩胛肱骨節律」(Scapulohumeral Rhythm) 比例約為多少？",
+    options: ["1:1", "2:1 (盂肱關節 : 肩胛胸廓關節)", "1:2 (盂肱關節 : 肩胛胸廓關節)", "3:1"],
+    correctAnswer: "2:1 (盂肱關節 : 肩胛胸廓關節)",
+    explanation: "每 2 度的盂肱關節外展，伴隨約 1 度的肩胛骨上轉。"
+  },
+  {
+    id: 10,
+    question: "若肩關節外展至 180 度，根據肩胛肱骨節律，盂肱關節與肩胛骨上轉各貢獻多少度？",
+    options: ["90度 : 90度", "120度 : 60度", "150度 : 30度", "100度 : 80度"],
+    correctAnswer: "120度 : 60度",
+    explanation: "180度總活動度 = 120度盂肱關節外展 + 60度肩胛骨上轉。"
+  },
+  {
+    id: 11,
+    question: "若肩關節外展至 150 度，肩胛骨大約往上轉動了幾度？",
+    options: ["30度", "50度", "75度", "100度"],
+    correctAnswer: "50度",
+    explanation: "根據 2:1 比例，總角度除以 3 即為肩胛骨角度。150 / 3 = 50 度。"
+  },
+  {
+    id: 12,
+    question: "為了避免肩峰下夾擠，進行肩外展時肱骨通常需要伴隨什麼動作？",
+    options: ["內轉 (Internal Rotation)", "外轉 (External Rotation)", "伸直", "內收"],
+    correctAnswer: "外轉 (External Rotation)",
+    explanation: "外展時外轉肱骨可將大結節移至後方，避免撞擊喙突肩峰弓。"
+  },
+  {
+    id: 13,
+    question: "「肩胛骨平面」(Scaption) 約位於額狀面前方幾度？",
+    options: ["0度", "15-20度", "30-35度", "60-70度"],
+    correctAnswer: "30-35度",
+    explanation: "肩胛骨平面約在額狀面前方 30-35 度，此平面動作較符合功能性且減少關節囊扭轉。"
+  },
+  {
+    id: 14,
+    question: "根據凹凸法則 (Convex-Concave Rule)，盂肱關節外展時，肱骨頭的滑動方向為何？",
+    options: ["向上滾動，向上滑動", "向上滾動，向下滑動", "向下滾動，向下滑動", "向下滾動，向上滑動"],
+    correctAnswer: "向上滾動，向下滑動",
+    explanation: "凸出的肱骨頭在凹陷的盂窩上活動，滾動方向與滑動方向相反。外展時頭向上滾動，必須向下滑動以避免撞擊。"
+  },
+  {
+    id: 15,
+    question: "鎖骨在肩關節上抬過程中會發生什麼軸向轉動？",
+    options: ["向前轉動", "向後轉動", "不轉動", "先前後後"],
+    correctAnswer: "向後轉動",
+    explanation: "肩屈曲或外展時，喙突鎖骨韌帶被拉緊，帶動鎖骨沿縱軸向後轉動。"
+  },
+
+  // 肌肉功能 (Muscles)
+  {
+    id: 16,
+    question: "下列何者「不是」旋轉肌袖 (Rotator Cuff) 的成員？",
+    options: ["棘上肌 (Supraspinatus)", "棘下肌 (Infraspinatus)", "小圓肌 (Teres Minor)", "大圓肌 (Teres Major)"],
+    correctAnswer: "大圓肌 (Teres Major)",
+    explanation: "旋轉肌袖包括：棘上肌、棘下肌、小圓肌、肩胛下肌 (SITS)。大圓肌不屬於此群。"
+  },
+  {
+    id: 17,
+    question: "哪一條肌肉是肩胛骨唯一的「前突 (Protraction)」肌群？",
+    options: ["胸小肌", "前鋸肌 (Serratus Anterior)", "闊背肌", "鎖骨下肌"],
+    correctAnswer: "前鋸肌 (Serratus Anterior)",
+    explanation: "前鋸肌是主要的肩胛骨前突肌，對於推的動作至關重要。"
+  },
+  {
+    id: 18,
+    question: "「翼狀肩胛 (Winging Scapula)」通常是因為哪條神經受損導致前鋸肌無力？",
+    options: ["腋神經", "肩胛上神經", "長胸神經 (Long Thoracic Nerve)", "胸背神經"],
+    correctAnswer: "長胸神經 (Long Thoracic Nerve)",
+    explanation: "長胸神經支配前鋸肌，受損時無法貼緊肩胛骨內緣，導致翼狀肩胛。"
+  },
+  {
+    id: 19,
+    question: "負責肩胛骨「上轉 (Upward Rotation)」的力偶肌肉群包括哪些？",
+    options: ["上斜方肌、下斜方肌、前鋸肌", "菱形肌、提肩胛肌、胸小肌", "三角肌、棘上肌", "闊背肌、大圓肌"],
+    correctAnswer: "上斜方肌、下斜方肌、前鋸肌",
+    explanation: "這三條肌肉像轉方向盤一樣共同作用，產生肩胛骨上轉。"
+  },
+  {
+    id: 20,
+    question: "下列哪條肌肉支配神經是「脊椎副神經 (CN XI)」？",
+    options: ["前鋸肌", "斜方肌 (Trapezius)", "菱形肌", "闊背肌"],
+    correctAnswer: "斜方肌 (Trapezius)",
+    explanation: "斜方肌由第 11 對腦神經（脊椎副神經）支配。"
+  },
+  {
+    id: 21,
+    question: "棘上肌 (Supraspinatus) 的主要功能是什麼？",
+    options: ["肩內轉", "肩外轉", "啟動肩外展並穩定肱骨頭", "肩伸直"],
+    correctAnswer: "啟動肩外展並穩定肱骨頭",
+    explanation: "棘上肌是外展的啟動者，並提供重要的壓迫力將肱骨頭穩定在盂窩中。"
+  },
+  {
+    id: 22,
+    question: "下列哪一組肌肉是主要的肩關節「外轉肌」？",
+    options: ["肩胛下肌、大圓肌", "棘下肌、小圓肌", "闊背肌、胸大肌", "前三角肌、喙肱肌"],
+    correctAnswer: "棘下肌、小圓肌",
+    explanation: "棘下肌和小圓肌位於肩胛骨後側，負責肩關節外轉。"
+  },
+  {
+    id: 23,
+    question: "肩胛下肌 (Subscapularis) 的止點 (Insertion) 位於？",
+    options: ["大結節", "小結節 (Lesser Tubercle)", "橈神經溝", "三角肌粗隆"],
+    correctAnswer: "小結節 (Lesser Tubercle)",
+    explanation: "肩胛下肌止於小結節，是旋轉肌袖中唯一的內轉肌。"
+  },
+  {
+    id: 24,
+    question: "當手握把手做「引體向上」或「撐起身體」時，闊背肌進行的是什麼動作？",
+    options: ["開放鍊動作", "反向動作 (Reverse Action) 下壓肩帶上抬軀幹", "單純肩伸直", "肩胛骨前突"],
+    correctAnswer: "反向動作 (Reverse Action) 下壓肩帶上抬軀幹",
+    explanation: "在閉鎖鍊下，闊背肌與下斜方肌作為肩部下壓肌，可以將骨盆與軀幹往上拉（如坐姿推起身體）。"
+  },
+  {
+    id: 25,
+    question: "三角肌 (Deltoid) 由哪條神經支配？",
+    options: ["肌皮神經", "橈神經", "腋神經 (Axillary Nerve)", "正中神經"],
+    correctAnswer: "腋神經 (Axillary Nerve)",
+    explanation: "三角肌和小圓肌皆由腋神經支配。"
+  },
+
+  // 綜合與臨床 (Integration & Clinical)
+  {
+    id: 26,
+    question: "關於肩峰下夾擠症候群 (Impingement Syndrome)，下列敘述何者正確？",
+    options: ["通常是因為肱骨頭過度下移", "常涉及棘上肌腱或肩峰下黏液囊", "只發生在靜態姿勢", "與肩胛骨位置無關"],
+    correctAnswer: "常涉及棘上肌腱或肩峰下黏液囊",
+    explanation: "夾擠通常是因為肱骨頭上移撞擊喙突肩峰弓，壓迫到其間的棘上肌腱或黏液囊。"
+  },
+  {
+    id: 27,
+    question: "哪條肌肉無力容易導致盂肱關節半脫位 (Subluxation)，特別是在中風患者身上？",
+    options: ["上斜方肌", "前鋸肌", "胸小肌", "肱三頭肌"],
+    correctAnswer: "上斜方肌",
+    explanation: "上斜方肌無力會導致肩胛骨下轉，使盂窩傾斜向下，失去對肱骨頭的支撐，造成半脫位。"
+  },
+  {
+    id: 28,
+    question: "胸小肌緊繃可能會造成肩胛骨出現什麼代償姿勢？",
+    options: ["後縮 (Retraction)", "過度上轉", "前傾 (Anterior Tiliting)", "下壓受限"],
+    correctAnswer: "前傾 (Anterior Tiliting)",
+    explanation: "胸小肌附著於喙突，緊繃時會將喙突往下拉，造成肩胛骨前傾。"
+  },
+  {
+    id: 29,
+    question: "下列何者是肩胛骨「下轉 (Downward Rotation)」肌群？",
+    options: ["上斜方肌、前鋸肌", "菱形肌、提肩胛肌、胸小肌", "中斜方肌、下斜方肌", "三角肌、棘上肌"],
+    correctAnswer: "菱形肌、提肩胛肌、胸小肌",
+    explanation: "這些肌肉收縮時會將盂窩轉向下方，即下轉動作。"
+  },
+  {
+    id: 30,
+    question: "關於肩關節內轉肌群與外轉肌群的力量比較，通常是？",
+    options: ["外轉肌力量較大", "兩者力量相等", "內轉肌力量明顯較大", "取決於慣用手"],
+    correctAnswer: "內轉肌力量明顯較大",
+    explanation: "內轉肌群（胸大肌、闊背肌等）總質量與力矩皆遠大於外轉肌群。"
+  },
+  {
+    id: 31,
+    question: "哪條肌肉經過結節間溝 (Bicipital Groove)？",
+    options: ["肱三頭肌長頭", "肱二頭肌短頭", "肱二頭肌長頭", "喙肱肌"],
+    correctAnswer: "肱二頭肌長頭",
+    explanation: "肱二頭肌長頭肌腱走行於大結節與小結節之間的結節間溝。"
+  },
+  {
+    id: 32,
+    question: "下列何者不屬於肩胛骨的後縮 (Retraction) 肌群？",
+    options: ["中斜方肌", "菱形肌", "前鋸肌", "下斜方肌 (輔助)"],
+    correctAnswer: "前鋸肌",
+    explanation: "前鋸肌是前突肌，與後縮動作相反。"
+  },
+  {
+    id: 33,
+    question: "肩關節伸直 (Extension) 動作主要由哪些肌肉負責？",
+    options: ["前三角肌、胸大肌鎖骨頭", "闊背肌、大圓肌、後三角肌", "棘上肌、中三角肌", "前鋸肌、斜方肌"],
+    correctAnswer: "闊背肌、大圓肌、後三角肌",
+    explanation: "這些肌肉位於後側或腋下，能產生強力的肩伸直力矩。"
+  },
+  {
+    id: 34,
+    question: "下列關於提肩胛肌 (Levator Scapulae) 的敘述，何者錯誤？",
+    options: ["附著於肩胛骨內側緣上方", "負責上抬肩胛骨", "由背側肩胛神經支配", "是主要的上轉肌"],
+    correctAnswer: "是主要的上轉肌",
+    explanation: "提肩胛肌是肩胛骨的「下轉肌」與上抬肌，而非上轉肌。"
+  },
+  {
+    id: 35,
+    question: "投擲動作中，哪一期最容易造成外轉肌（如棘下肌）的離心收縮傷害？",
+    options: ["舉球期 (Wind-up)", "加速期", "減速期 (Deceleration)", "預備期"],
+    correctAnswer: "減速期 (Deceleration)",
+    explanation: "球投出後，外轉肌必須強力離心收縮以將快速內轉的手臂煞車，此時張力最大。"
+  },
+  {
+    id: 36,
+    question: "胸鎖關節 (SC Joint) 在前後方向（前突/後縮）的運動發生在哪個軸？",
+    options: ["垂直軸 (Vertical axis)", "前後軸", "內外軸", "斜軸"],
+    correctAnswer: "垂直軸 (Vertical axis)",
+    explanation: "前突與後縮是在水平面繞著垂直軸進行的動作。"
+  },
+  {
+    id: 37,
+    question: "下列哪個關節屬於「假關節」或「功能性介面」？",
+    options: ["胸鎖關節", "肩峰鎖骨關節", "盂肱關節", "肩胛胸廓關節 (ST Joint)"],
+    correctAnswer: "肩胛胸廓關節 (ST Joint)",
+    explanation: "肩胛胸廓關節是肩胛骨與胸廓之間的滑動介面，並非真正的滑膜關節。"
+  },
+  {
+    id: 38,
+    question: "下列哪條神經支配菱形肌？",
+    options: ["長胸神經", "胸背神經", "背側肩胛神經 (Dorsal Scapular Nerve)", "肩胛上神經"],
+    correctAnswer: "背側肩胛神經 (Dorsal Scapular Nerve)",
+    explanation: "背側肩胛神經支配提肩胛肌與菱形肌。"
+  },
+  {
+    id: 39,
+    question: "肩外展動作中，三角肌產生向上的剪力，主要由誰產生的向下拉力來平衡？",
+    options: ["上斜方肌", "旋轉肌袖 (ITS)", "前鋸肌", "胸大肌"],
+    correctAnswer: "旋轉肌袖 (ITS)",
+    explanation: "棘下肌、小圓肌與肩胛下肌產生向下的力，抵銷三角肌向上的拉力，形成力偶以轉動肱骨。"
+  },
+  {
+    id: 40,
+    question: "肩關節水平內收 (Horizontal Adduction) 主要由哪些肌肉執行？",
+    options: ["後三角肌、棘下肌", "胸大肌、前三角肌", "中三角肌、棘上肌", "闊背肌、大圓肌"],
+    correctAnswer: "胸大肌、前三角肌",
+    explanation: "位於前側的肌肉，如胸大肌與前三角肌，負責將手臂拉向中線（水平內收）。"
+  },
+  {
+    id: 41,
+    question: "肱骨外上髁到肱骨頭中心的連線與盂窩平面的角度關係稱為？",
+    options: ["後傾角 (Retroversion)", "前傾角", "攜帶角", "頸幹角"],
+    correctAnswer: "後傾角 (Retroversion)",
+    explanation: "肱骨頭相對於肱骨髁通常有約 30 度的後傾，以配合肩胛骨平面的角度。"
+  },
+  {
+    id: 42,
+    question: "下列何者是盂肱關節靜態穩定機制的一部分？",
+    options: ["三角肌收縮", "盂窩稍微上傾 (Upward tilt)", "盂窩下傾", "大圓肌張力"],
+    correctAnswer: "盂窩稍微上傾 (Upward tilt)",
+    explanation: "正常的肩胛骨姿勢使盂窩略微朝上，配合重力與上關節囊張力，形成靜態鎖定機制。"
+  },
+  {
+    id: 43,
+    question: "手臂上抬過程中，鎖骨下肌 (Subclavius) 的主要作用是？",
+    options: ["上抬鎖骨", "保護並穩定胸鎖關節", "後縮鎖骨", "外轉鎖骨"],
+    correctAnswer: "保護並穩定胸鎖關節",
+    explanation: "鎖骨下肌提供向下的拉力，增加胸鎖關節的穩定性。"
+  },
+  {
+    id: 44,
+    question: "哪一條肌肉的肌腱在肩峰下空間最容易受到夾擠？",
+    options: ["肩胛下肌", "棘上肌", "小圓肌", "肱三頭肌"],
+    correctAnswer: "棘上肌",
+    explanation: "棘上肌腱位於肱骨頭與肩峰之間最狹窄處，最常發生肌腱炎或斷裂。"
+  },
+  {
+    id: 45,
+    question: "闊背肌、大圓肌與胸大肌的共同動作是？",
+    options: ["肩外展", "肩內收", "肩外轉", "肩胛上轉"],
+    correctAnswer: "肩內收",
+    explanation: "這三條強有力的肌肉都是肩關節的內收肌。"
+  },
+  {
+    id: 46,
+    question: "下列哪條肌肉不附著於肱骨上？",
+    options: ["胸大肌", "闊背肌", "前鋸肌", "棘下肌"],
+    correctAnswer: "前鋸肌",
+    explanation: "前鋸肌起於肋骨，止於肩胛骨內緣，不附著於肱骨。"
+  },
+  {
+    id: 47,
+    question: "肩胛骨下角 (Inferior Angle) 約對應哪一節脊椎高度？",
+    options: ["T2", "T3", "T7", "L1"],
+    correctAnswer: "T7",
+    explanation: "肩胛骨下角通常位於第 7 胸椎 (T7) 棘突的高度。"
+  },
+  {
+    id: 48,
+    question: "下列關於胸鎖乳突肌 (Sternocleidomastoid) 的敘述，何者與肩帶有關？",
+    options: ["附著於肩峰", "附著於鎖骨內側，可協助鎖骨上抬", "附著於喙突", "是肩胛骨下壓肌"],
+    correctAnswer: "附著於鎖骨內側，可協助鎖骨上抬",
+    explanation: "胸鎖乳突肌鎖骨頭附著於鎖骨內側，收縮時可協助鎖骨與胸骨上抬。"
+  },
+  {
+    id: 49,
+    question: "肩關節外展時，下盂肱韌帶 (IGHL) 的作用是？",
+    options: ["放鬆", "變緊並像吊床一樣支撐肱骨頭", "防止肱骨後脫位", "防止鎖骨轉動"],
+    correctAnswer: "變緊並像吊床一樣支撐肱骨頭",
+    explanation: "在外展時，下盂肱韌帶複合體會像吊床一樣繃緊，防止肱骨頭過度下移或前/後移。"
+  },
+  {
+    id: 50,
+    question: "若前鋸肌無力，病患在做伏地挺身時會出現什麼現象？",
+    options: ["肩胛骨過度後縮", "翼狀肩胛 (Scapular Winging)", "肩胛骨上抬", "頸部過度伸直"],
+    correctAnswer: "翼狀肩胛 (Scapular Winging)",
+    explanation: "前鋸肌負責將肩胛骨貼緊胸壁，無力時內緣會翹起，形成翼狀肩胛。"
+  }
+];
+
+// --- 輔助函式 ---
+const shuffleArray = (array) => {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+};
+
+// 產生帶有隨機選項的題目物件
+const generateQuizSession = () => {
+  // 1. 隨機選 10 題
+  const selectedQuestions = shuffleArray(FULL_QUESTION_BANK).slice(0, 10);
+  
+  // 2. 對每一題的選項進行隨機排列
+  return selectedQuestions.map(q => {
+    const shuffledOptions = shuffleArray(q.options);
+    return {
+      ...q,
+      shuffledOptions, // 使用隨機排列後的選項
+      originalIndexMap: q.options.map(opt => shuffledOptions.indexOf(opt)) // 用於追蹤答案（如果需要，但這裡直接比對字串即可）
+    };
+  });
+};
+
+const App = () => {
+  const [appState, setAppState] = useState('home'); // home, quiz, result
+  const [questions, setQuestions] = useState([]);
+  const [currentQIndex, setCurrentQIndex] = useState(0);
+  const [userAnswers, setUserAnswers] = useState({}); // { questionId: selectedOptionString }
+  const [timeLeft, setTimeLeft] = useState(3600); // 1 hour in seconds
+  const [score, setScore] = useState(0);
+
+  // 計時器
+  useEffect(() => {
+    let timer;
+    if (appState === 'quiz' && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && appState === 'quiz') {
+      submitQuiz();
+    }
+    return () => clearInterval(timer);
+  }, [appState, timeLeft]);
+
+  const startQuiz = () => {
+    const newSession = generateQuizSession();
+    setQuestions(newSession);
+    setCurrentQIndex(0);
+    setUserAnswers({});
+    setTimeLeft(3600);
+    setScore(0);
+    setAppState('quiz');
+  };
+
+  const handleOptionSelect = (option) => {
+    const currentQ = questions[currentQIndex];
+    setUserAnswers(prev => ({
+      ...prev,
+      [currentQ.id]: option
+    }));
+  };
+
+  const nextQuestion = () => {
+    if (currentQIndex < questions.length - 1) {
+      setCurrentQIndex(prev => prev + 1);
+    }
+  };
+
+  const prevQuestion = () => {
+    if (currentQIndex > 0) {
+      setCurrentQIndex(prev => prev - 1);
+    }
+  };
+
+  const submitQuiz = () => {
+    // 計算分數
+    let correctCount = 0;
+    questions.forEach(q => {
+      if (userAnswers[q.id] === q.correctAnswer) {
+        correctCount++;
+      }
+    });
+    setScore(correctCount);
+    setAppState('result');
+  };
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // --- 畫面渲染 ---
+
+  // 1. 首頁
+  if (appState === 'home') {
+    return (
+      <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col items-center justify-center p-4">
+        <div className="max-w-2xl w-full bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 text-center space-y-8">
+          <div className="space-y-4">
+            <div className="flex justify-center">
+              <BookOpen size={64} className="text-blue-400" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400 py-2">
+              SMR讀書會<br />肩關節主題測驗
+            </h1>
+            <p className="text-slate-400 text-lg">
+              本測驗共 50 題題庫，每次隨機抽選 10 題。<br />
+              包含計時功能，請在時間內完成作答。
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left bg-slate-900/50 p-6 rounded-xl border border-slate-700">
+            <div className="flex items-center space-x-3">
+              <div className="bg-blue-500/20 p-2 rounded-lg text-blue-400"><Clock size={20}/></div>
+              <div>
+                <p className="text-sm text-slate-500">限時</p>
+                <p className="font-semibold">1 小時</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="bg-teal-500/20 p-2 rounded-lg text-teal-400"><BookOpen size={20}/></div>
+              <div>
+                <p className="text-sm text-slate-500">題數</p>
+                <p className="font-semibold">10 題</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="bg-purple-500/20 p-2 rounded-lg text-purple-400"><Award size={20}/></div>
+              <div>
+                <p className="text-sm text-slate-500">及格</p>
+                <p className="font-semibold">60 分</p>
+              </div>
+            </div>
+          </div>
+
+          <button 
+            onClick={startQuiz}
+            className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-500 hover:to-teal-500 text-white text-2xl font-bold py-4 rounded-xl transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-blue-500/25"
+          >
+            開始測驗
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. 測驗頁面
+  if (appState === 'quiz') {
+    const currentQ = questions[currentQIndex];
+    const progress = ((currentQIndex + 1) / questions.length) * 100;
+    const isLastQuestion = currentQIndex === questions.length - 1;
+
+    return (
+      <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col items-center p-4 md:p-8">
+        {/* Header Bar */}
+        <div className="w-full max-w-3xl flex justify-between items-center mb-6 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
+          <div className="text-slate-400 font-medium">
+            第 <span className="text-blue-400 text-xl font-bold">{currentQIndex + 1}</span> / {questions.length} 題
+          </div>
+          <div className={`flex items-center font-mono text-xl font-bold ${timeLeft < 60 ? 'text-red-400 animate-pulse' : 'text-teal-400'}`}>
+            <Clock size={24} className="mr-2" />
+            {formatTime(timeLeft)}
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="w-full max-w-3xl h-2 bg-slate-800 rounded-full mb-8 overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-blue-500 to-teal-400 transition-all duration-300 ease-out"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+
+        {/* Question Card */}
+        <div className="w-full max-w-3xl bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-6 md:p-10 flex-grow flex flex-col relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+          
+          <h2 className="text-2xl md:text-3xl font-bold leading-relaxed mb-8 text-slate-100 relative z-10">
+            {currentQ.question}
+          </h2>
+
+          <div className="space-y-4 relative z-10 flex-grow">
+            {currentQ.shuffledOptions.map((option, idx) => {
+              const isSelected = userAnswers[currentQ.id] === option;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => handleOptionSelect(option)}
+                  className={`w-full text-left p-5 rounded-xl text-xl transition-all duration-200 border-2 flex items-center group
+                    ${isSelected 
+                      ? 'bg-blue-600/20 border-blue-500 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)]' 
+                      : 'bg-slate-700/50 border-transparent hover:bg-slate-700 hover:border-slate-600 text-slate-300'
+                    }`}
+                >
+                  <div className={`w-8 h-8 rounded-full border-2 mr-4 flex items-center justify-center flex-shrink-0 transition-colors
+                    ${isSelected ? 'border-blue-400 bg-blue-500 text-white' : 'border-slate-500 text-transparent group-hover:border-slate-400'}`}>
+                    {isSelected && <div className="w-3 h-3 bg-white rounded-full"></div>}
+                  </div>
+                  {option}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Navigation */}
+          <div className="flex justify-between items-center mt-8 pt-8 border-t border-slate-700 relative z-10">
+            <button
+              onClick={prevQuestion}
+              disabled={currentQIndex === 0}
+              className={`flex items-center px-6 py-3 rounded-lg text-lg font-medium transition-colors
+                ${currentQIndex === 0 
+                  ? 'text-slate-600 cursor-not-allowed' 
+                  : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                }`}
+            >
+              <ChevronLeft size={24} className="mr-1" /> 上一題
+            </button>
+
+            {isLastQuestion ? (
+              <button
+                onClick={submitQuiz}
+                className="flex items-center px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-lg font-bold shadow-lg shadow-green-500/25 transition-all transform hover:scale-105"
+              >
+                繳交試卷 <CheckCircle size={24} className="ml-2" />
+              </button>
+            ) : (
+              <button
+                onClick={nextQuestion}
+                className="flex items-center px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-lg font-medium transition-colors"
+              >
+                下一題 <ChevronRight size={24} className="ml-1" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. 結果頁面
+  if (appState === 'result') {
+    const percentage = Math.round((score / questions.length) * 100);
+    
+    return (
+      <div className="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8">
+        <div className="max-w-4xl mx-auto space-y-8">
+          
+          {/* Score Card */}
+          <div className="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 text-center relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-teal-400"></div>
+            <h2 className="text-3xl font-bold text-slate-300 mb-2">測驗結果</h2>
+            <div className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-400 to-teal-400 my-6">
+              {score * 10} <span className="text-2xl text-slate-500 font-medium">分</span>
+            </div>
+            <p className="text-xl text-slate-400 mb-8">
+              答對 {score} / {questions.length} 題
+            </p>
+            <button
+              onClick={startQuiz}
+              className="inline-flex items-center px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-blue-500/25"
+            >
+              <RotateCcw size={20} className="mr-2" /> 重新測驗
+            </button>
+          </div>
+
+          {/* Detailed Review */}
+          <div className="space-y-6">
+            <h3 className="text-2xl font-bold text-slate-300 px-2 border-l-4 border-blue-500">詳細解析</h3>
+            {questions.map((q, idx) => {
+              const userAnswer = userAnswers[q.id];
+              const isCorrect = userAnswer === q.correctAnswer;
+              
+              return (
+                <div key={q.id} className="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+                  <div className={`p-4 flex items-start gap-4 ${isCorrect ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
+                    <div className="mt-1 flex-shrink-0">
+                      {isCorrect ? <CheckCircle className="text-green-400" size={24} /> : <XCircle className="text-red-400" size={24} />}
+                    </div>
+                    <div className="flex-grow">
+                      <h4 className="text-lg font-bold text-slate-200 mb-4">
+                        <span className="text-slate-500 mr-2">{idx + 1}.</span>
+                        {q.question}
+                      </h4>
+                      
+                      <div className="space-y-2 mb-4">
+                        <div className={`p-3 rounded-lg flex items-center ${isCorrect ? 'bg-green-500/20 text-green-200' : 'bg-red-500/20 text-red-200'}`}>
+                          <span className="text-sm font-bold w-16 opacity-70">您的回答</span>
+                          <span>{userAnswer || "(未作答)"}</span>
+                        </div>
+                        {!isCorrect && (
+                          <div className="p-3 rounded-lg bg-green-500/20 text-green-200 flex items-center">
+                            <span className="text-sm font-bold w-16 opacity-70">正確答案</span>
+                            <span>{q.correctAnswer}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
+                        <p className="text-sm text-blue-300 font-bold mb-1">解析：</p>
+                        <p className="text-slate-300 leading-relaxed">{q.explanation}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
+export default App;
