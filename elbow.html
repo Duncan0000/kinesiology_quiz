@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMR讀書會 肘關節主題測驗</title>
+    <!-- 引入 Tailwind CSS (用於樣式) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Lucide Icons (用於圖示) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* 自定義動畫與樣式 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #0f172a; /* slate-900 */
+            color: #f1f5f9; /* slate-100 */
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 滾動條樣式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- App 容器 -->
+    <div id="app" class="flex-grow flex flex-col relative overflow-x-hidden">
+        <!-- 內容將由 JavaScript 動態渲染 -->
+    </div>
+
+    <script>
+        // --- 題目資料庫 (50題 - 肘關節主題) ---
+        const FULL_QUESTION_BANK = [
+          // 骨骼與關節結構 (Osteology & Arthrology)
+          {
+            id: 1,
+            question: "肱骨遠端與尺骨近端形成的關節主要構造是什麼？",
+            options: ["肱骨小頭 (Capitulum) 與橈骨頭", "滑車 (Trochlea) 與滑車切跡 (Trochlear notch)", "鷹嘴窩 (Olecranon fossa) 與喙突", "橈骨頭與尺骨切跡"],
+            correctAnswer: "滑車 (Trochlea) 與滑車切跡 (Trochlear notch)",
+            explanation: "肱尺關節 (Humeroulnar joint) 主要是由肱骨的滑車與尺骨的滑車切跡緊密咬合而成，提供極佳的結構穩定性。"
+          },
+          {
+            id: 2,
+            question: "正常人的「攜帶角 (Carrying Angle)」或稱外翻角，男性與女性的平均值約為？",
+            options: ["男性 5度 / 女性 10-15度", "男性 15度 / 女性 5度", "男性 0度 / 女性 0度", "男性 20度 / 女性 25度"],
+            correctAnswer: "男性 5度 / 女性 10-15度",
+            explanation: "由於滑車內側唇較突出，伸直時前臂會自然向外偏，女性通常因為骨盆較寬，攜帶角會比男性大。"
+          },
+          {
+            id: 3,
+            question: "肱骨小頭 (Capitulum) 位於肱骨遠端的何處，並與哪個骨頭形成關節？",
+            options: ["內側，與尺骨形成關節", "外側，與橈骨頭形成關節", "後側，與鷹嘴突形成關節", "上方，與喙突形成關節"],
+            correctAnswer: "外側，與橈骨頭形成關節",
+            explanation: "肱骨小頭位於外側，呈現半球狀，與橈骨頭的凹窩形成肱橈關節 (Humeroradial joint)。"
+          },
+          {
+            id: 4,
+            question: "肘關節囊 (Joint Capsule) 在哪個動作角度下容積最大（最鬆），常是關節腫脹時患者採取的姿勢？",
+            options: ["完全伸直 (0度)", "完全屈曲 (145度)", "屈曲約 80 度", "旋前 90 度"],
+            correctAnswer: "屈曲約 80 度",
+            explanation: "肘關節在屈曲約 70-80 度時關節囊最鬆弛，因此當有積水或發炎時，患者會傾向維持此姿勢以減輕壓力。"
+          },
+          {
+            id: 5,
+            question: "關於骨間膜 (Interosseous Membrane) 的功能，下列何者「錯誤」？",
+            options: ["提供前臂肌肉附著點", "將橈骨受到的壓力傳遞分散至尺骨", "協助抵抗縱向的拉力 (Distraction force)", "將兩骨緊密連結在一起"],
+            correctAnswer: "協助抵抗縱向的拉力 (Distraction force)",
+            explanation: "骨間膜的纖維走向主要是從橈骨斜向下到尺骨，這有助於抵抗壓力 (Compression)，但對於像提重物產生的拉力 (Distraction) 則無法提供主要支撐。"
+          },
+
+          // 韌帶與穩定性 (Ligaments & Stability)
+          {
+            id: 6,
+            question: "內側副韌帶 (MCL) 中，哪一束纖維是對抗外翻力 (Valgus force) 最主要的結構？",
+            options: ["前束 (Anterior bundle)", "後束 (Posterior bundle)", "橫束 (Transverse bundle)", "斜束 (Oblique bundle)"],
+            correctAnswer: "前束 (Anterior bundle)",
+            explanation: "MCL的前束是最大且最強的，是對抗外翻應力最重要的穩定結構，特別是在投擲動作中。"
+          },
+          {
+            id: 7,
+            question: "橈骨環狀韌帶 (Annular Ligament) 的主要功能是什麼？",
+            options: ["限制肘關節伸直", "將橈骨頭固定在尺骨的橈骨切跡上", "防止尺骨向後脫位", "連接肱骨與橈骨"],
+            correctAnswer: "將橈骨頭固定在尺骨的橈骨切跡上",
+            explanation: "環狀韌帶包圍橈骨頭，形成一個環，讓橈骨頭可以在其中旋轉，同時防止橈骨頭向外側脫位。"
+          },
+          {
+            id: 8,
+            question: "「保母肘 (Nursemaid's elbow)」通常是指哪個構造的半脫位？",
+            options: ["尺骨鷹嘴突", "橈骨頭從環狀韌帶滑脫", "肱骨小頭", "橈尺遠端關節"],
+            correctAnswer: "橈骨頭從環狀韌帶滑脫",
+            explanation: "幼兒的橈骨頭尚未發育完全，猛力拉扯手臂容易造成橈骨頭向遠端滑出環狀韌帶的束縛。"
+          },
+          {
+            id: 9,
+            question: "外側副韌帶複合體 (LCL Complex) 主要抵抗什麼方向的力量？",
+            options: ["外翻力 (Valgus)", "內翻力 (Varus)", "縱向拉力", "屈曲力"],
+            correctAnswer: "內翻力 (Varus)",
+            explanation: "LCL 位於肘關節外側，主要功能是抵抗內翻應力 (Varus stress)。"
+          },
+          {
+            id: 10,
+            question: "MCL 的後束 (Posterior bundle) 在肘關節什麼動作下張力最大？",
+            options: ["完全伸直", "完全屈曲", "旋前", "旋後"],
+            correctAnswer: "完全屈曲",
+            explanation: "MCL 後束的纖維走向使其在肘關節屈曲超過 90 度後會逐漸繃緊。"
+          },
+
+          // 肌肉與神經 (Muscles & Nerves)
+          {
+            id: 11,
+            question: "下列哪一條肌肉是「不論前臂位置如何」皆為最強的肘屈肌？",
+            options: ["肱二頭肌 (Biceps Brachii)", "肱肌 (Brachialis)", "肱橈肌 (Brachioradialis)", "旋前圓肌 (Pronator Teres)"],
+            correctAnswer: "肱肌 (Brachialis)",
+            explanation: "肱肌附著於尺骨粗隆，只跨過肘關節，不受前臂旋轉影響，被稱為「肘屈曲的工作馬 (Workhorse)」。"
+          },
+          {
+            id: 12,
+            question: "肱二頭肌 (Biceps Brachii) 在下列哪種前臂姿勢下，屈肘效率最高？",
+            options: ["旋前 (Pronation)", "旋後 (Supination)", "中立位 (Neutral)", "與姿勢無關"],
+            correctAnswer: "旋後 (Supination)",
+            explanation: "肱二頭肌同時是強力的旋後肌，當前臂旋後時，其肌腱力線最直，屈肘力臂最大。"
+          },
+          {
+            id: 13,
+            question: "肱橈肌 (Brachioradialis) 的主要功能除了屈肘外，還能協助將前臂帶到什麼位置？",
+            options: ["完全旋後", "完全旋前", "中立位 (Neutral / Thumbs-up)", "過度伸直"],
+            correctAnswer: "中立位 (Neutral / Thumbs-up)",
+            explanation: "肱橈肌具有「去旋轉」的功能，能將旋前或旋後的前臂帶回到中立位置。"
+          },
+          {
+            id: 14,
+            question: "肱三頭肌 (Triceps Brachii) 的哪一個頭跨過肩關節，並協助肩伸直？",
+            options: ["長頭 (Long head)", "外側頭 (Lateral head)", "內側頭 (Medial head)", "全部三個頭"],
+            correctAnswer: "長頭 (Long head)",
+            explanation: "只有肱三頭肌的長頭起點在肩胛骨的盂下結節，跨過肩關節，因此具備肩伸直的功能。"
+          },
+          {
+            id: 15,
+            question: "肘肌 (Anconeus) 雖然小，但其主要穩定功能為何？",
+            options: ["防止屈曲時關節囊夾擠", "對抗外翻力", "提供伸直時的初期動力並穩定尺骨", "協助旋後"],
+            correctAnswer: "提供伸直時的初期動力並穩定尺骨",
+            explanation: "肘肌雖小，但對於提供尺骨側向穩定性以及伸直動作的微調相當重要。"
+          },
+          {
+            id: 16,
+            question: "支配肱二頭肌與肱肌的神經是？",
+            options: ["橈神經 (Radial n.)", "正中神經 (Median n.)", "尺神經 (Ulnar n.)", "肌皮神經 (Musculocutaneous n.)"],
+            correctAnswer: "肌皮神經 (Musculocutaneous n.)",
+            explanation: "肌皮神經支配上臂前側肌群，包含喙肱肌、肱二頭肌與肱肌。"
+          },
+          {
+            id: 17,
+            question: "「網球肘 (Tennis Elbow)」通常涉及哪條肌肉的肌腱病變？",
+            options: ["橈側縮腕短肌 (ECRB)", "旋前圓肌", "尺側伸腕肌", "肱二頭肌"],
+            correctAnswer: "橈側縮腕短肌 (ECRB)",
+            explanation: "外上髁炎 (Lateral Epicondylitis) 最常涉及橈側縮腕短肌 (Extensor Carpi Radialis Brevis) 的起點。"
+          },
+          {
+            id: 18,
+            question: "通過「肘隧道 (Cubital Tunnel)」並在尺骨鷹嘴突內側易受壓迫的是哪條神經？",
+            options: ["正中神經", "橈神經", "尺神經", "肌皮神經"],
+            correctAnswer: "尺神經",
+            explanation: "尺神經走在內上髁後方的溝槽（肘隧道），是上肢常見的神經壓迫點（除了腕隧道外）。"
+          },
+          {
+            id: 19,
+            question: "旋後肌 (Supinator) 由哪條神經支配？",
+            options: ["正中神經", "尺神經", "橈神經深支 (Deep radial n.)", "肌皮神經"],
+            correctAnswer: "橈神經深支 (Deep radial n.)",
+            explanation: "橈神經在肘部分為淺支與深支，深支穿過旋後肌並支配之。"
+          },
+          {
+            id: 20,
+            question: "旋前方肌 (Pronator Quadratus) 位於前臂何處？",
+            options: ["近端前側", "遠端前側深層", "外側淺層", "後側深層"],
+            correctAnswer: "遠端前側深層",
+            explanation: "旋前方肌位於前臂遠端深層，橫跨橈尺骨，是主要的動態穩定肌與旋前肌。"
+          },
+
+          // 運動學與生物力學 (Kinematics & Biomechanics)
+          {
+            id: 21,
+            question: "正常肘關節屈曲的活動度 (ROM) 大約為多少？",
+            options: ["90-100度", "110-120度", "140-150度", "180度"],
+            correctAnswer: "140-150度",
+            explanation: "正常主動屈曲約可達 145 度左右，受肌肉軟組織擠壓限制；被動可達 160 度。"
+          },
+          {
+            id: 22,
+            question: "日常生活功能性活動 (如吃飯、梳頭) 通常需要多少度的肘屈曲範圍？",
+            options: ["0-30度", "30-130度", "100-150度", "全範圍"],
+            correctAnswer: "30-130度",
+            explanation: "大多數日常生活活動 (ADL) 發生在 30 到 130 度的屈曲弧度內。"
+          },
+          {
+            id: 23,
+            question: "前臂旋前 (Pronation) 與旋後 (Supination) 的旋轉軸是通過？",
+            options: ["橈骨頭中心到尺骨莖突", "橈骨頭中心到尺骨頭中心", "鷹嘴突到尺骨莖突", "肱骨內上髁到外上髁"],
+            correctAnswer: "橈骨頭中心到尺骨頭中心",
+            explanation: "旋轉軸是一條斜線，連接近端的橈骨頭中心與遠端的尺骨頭中心。"
+          },
+          {
+            id: 24,
+            question: "在開放鍊 (Open Chain) 動作中，前臂旋前時，遠端橈骨是如何移動的？",
+            options: ["繞著固定的尺骨旋轉並跨越其上方", "尺骨繞著橈骨旋轉", "兩骨平行移動", "橈骨向近端滑動"],
+            correctAnswer: "繞著固定的尺骨旋轉並跨越其上方",
+            explanation: "在開放鍊下尺骨相對固定，橈骨頭在原處轉動，但遠端橈骨會繞過尺骨頭轉到內側。"
+          },
+          {
+            id: 25,
+            question: "當手掌固定在桌面上支撐身體（閉鎖鍊 Closed Chain），前臂旋前其實主要是由什麼骨頭動作產生？",
+            options: ["橈骨旋轉", "肱骨內轉與尺骨外轉", "肱骨外轉與尺骨外轉", "肩胛骨上轉"],
+            correctAnswer: "肱骨外轉與尺骨外轉",
+            explanation: "在手固定時，橈骨被固定，旋前動作由肱骨與尺骨相對於固定的橈骨進行外轉 (External Rotation) 來達成。"
+          },
+          {
+            id: 26,
+            question: "推門動作 (Pushing a door) 時，肱三頭肌主要作用是伸肘，哪條肌肉必須協同作用以防止肘過度伸直並幫助前推？",
+            options: ["前三角肌 (Anterior Deltoid)", "肱二頭肌", "旋後肌", "背闊肌"],
+            correctAnswer: "前三角肌 (Anterior Deltoid)",
+            explanation: "前三角肌屈曲肩關節，與肱三頭肌伸肘形成力偶，共同完成向前的推力。"
+          },
+          {
+            id: 27,
+            question: "使用螺絲起子將螺絲鎖緊 (右撇子順時針轉動)，主要需要哪個動作與肌肉？",
+            options: ["旋前 / 旋前圓肌", "旋後 / 肱二頭肌", "屈曲 / 肱肌", "伸直 / 肱三頭肌"],
+            correctAnswer: "旋後 / 肱二頭肌",
+            explanation: "鎖緊螺絲是強力的旋後動作，需要肱二頭肌強力收縮，這也是為什麼通常會伴隨屈肘動作。"
+          },
+          {
+            id: 28,
+            question: "下列何者是橈尺近端關節 (Proximal Radioulnar Joint) 的關節分類？",
+            options: ["樞紐關節 (Hinge)", "車軸關節 (Pivot)", "球窩關節 (Ball-and-socket)", "平面關節 (Plane)"],
+            correctAnswer: "車軸關節 (Pivot)",
+            explanation: "橈尺近端關節屬於車軸關節，允許橈骨頭在環狀韌帶內進行自轉。"
+          },
+          {
+            id: 29,
+            question: "Law of Parsimony (簡約法則) 在肘屈肌的應用中，通常哪條肌肉會最先被徵召？",
+            options: ["肱二頭肌", "肱肌", "肱橈肌", "旋前圓肌"],
+            correctAnswer: "肱肌",
+            explanation: "神經系統傾向先徵召單關節、做功最直接的肌肉 (肱肌)，只有在阻力增加或需要速度時才會徵召多關節的肱二頭肌。"
+          },
+          {
+            id: 30,
+            question: "肘屈曲攣縮 (Flexion Contracture) 對上肢功能的影響，主要是限制了什麼？",
+            options: ["手部觸摸頭後側的能力", "伸長手臂取物的範圍 (Reach)", "提重物的能力", "旋前的角度"],
+            correctAnswer: "伸長手臂取物的範圍 (Reach)",
+            explanation: "無法完全伸直肘關節會直接減少手臂向外延伸的空間範圍，影響取物功能。"
+          },
+
+          // 進階應用與病理 (Advanced & Pathology)
+          {
+            id: 31,
+            question: "尺骨變異 (Ulnar Variance) 為「正變異 (Positive)」代表什麼？",
+            options: ["尺骨比橈骨長", "尺骨比橈骨短", "尺骨與橈骨等長", "尺骨發生骨折"],
+            correctAnswer: "尺骨比橈骨長",
+            explanation: "正變異指尺骨遠端長於橈骨，這可能導致尺骨撞擊症候群 (Ulnar impaction syndrome) 或 TFCC 損傷。"
+          },
+          {
+            id: 32,
+            question: "TFCC (三角纖維軟骨複合體) 位於腕部的哪一側？",
+            options: ["橈側 (Radial)", "尺側 (Ulnar)", "掌側 (Volar)", "背側 (Dorsal)"],
+            correctAnswer: "尺側 (Ulnar)",
+            explanation: "TFCC 位於尺骨頭與腕骨之間，填補尺骨較短的空隙，並傳遞約 20% 的壓力。"
+          },
+          {
+            id: 33,
+            question: "「高爾夫球肘 (Golfer's Elbow)」是指哪裡的發炎？",
+            options: ["外上髁 / 伸肌群起點", "內上髁 / 屈肌群起點", "鷹嘴突 / 肱三頭肌止點", "橈骨頭"],
+            correctAnswer: "內上髁 / 屈肌群起點",
+            explanation: "內上髁炎 (Medial Epicondylitis) 涉及屈腕肌與旋前圓肌的共同起點，常見於反覆屈腕或投擲運動。"
+          },
+          {
+            id: 34,
+            question: "當手撐地跌倒 (FOOSH) 時，力量主要通過哪個骨頭傳遞到肘關節？",
+            options: ["80% 經由橈骨", "80% 經由尺骨", "50% 橈骨 / 50% 尺骨", "全部經由尺骨"],
+            correctAnswer: "80% 經由橈骨",
+            explanation: "在腕部，橈骨與腕骨接觸面積大，承受約 80% 的壓力，再經由骨間膜傳遞部分壓力到尺骨。"
+          },
+          {
+            id: 35,
+            question: "肘關節伸直時，鷹嘴突會進入肱骨的哪個構造？",
+            options: ["冠狀窩 (Coronoid fossa)", "橈骨窩 (Radial fossa)", "鷹嘴窩 (Olecranon fossa)", "結節間溝"],
+            correctAnswer: "鷹嘴窩 (Olecranon fossa)",
+            explanation: "伸直終末端，尺骨鷹嘴突會卡入肱骨後側的鷹嘴窩，形成骨性鎖定，限制過度伸直。"
+          },
+          {
+            id: 36,
+            question: "橈神經損傷 (Radial nerve injury) 在前臂最典型的症狀是？",
+            options: ["垂腕 (Wrist drop)", "猿手 (Ape hand)", "爪形手 (Claw hand)", "無法旋前"],
+            correctAnswer: "垂腕 (Wrist drop)",
+            explanation: "橈神經支配所有伸腕與伸指肌群，損傷會導致無法伸腕，形成垂腕。"
+          },
+          {
+            id: 37,
+            question: "下列哪條肌肉不屬於屈腕肌 - 旋前肌群 (Flexor-Pronator Group)？",
+            options: ["旋前圓肌", "橈側屈腕肌", "掌長肌", "肱橈肌"],
+            correctAnswer: "肱橈肌",
+            explanation: "肱橈肌起於肱骨外側脊，由橈神經支配，屬於伸肌側的肌肉（雖然功能是屈肘），不屬於內上髁起源的屈肌群。"
+          },
+          {
+            id: 38,
+            question: "C6 神經根病變最可能影響下列哪個反射 (Reflex)？",
+            options: ["肱三頭肌反射", "肱二頭肌或肱橈肌反射", "膝反射", "跟腱反射"],
+            correctAnswer: "肱二頭肌或肱橈肌反射",
+            explanation: "肱二頭肌主要由 C5-C6 支配，肱橈肌由 C5-C6 支配，C6 病變常導致這些反射減弱。"
+          },
+          {
+            id: 39,
+            question: "若要伸展肱二頭肌的長頭，肩關節應擺位在？",
+            options: ["屈曲", "伸直", "外展", "內收"],
+            correctAnswer: "伸直",
+            explanation: "肱二頭肌長頭跨過肩關節前方，負責屈曲，因此伸展時需要將肩關節伸直 (Extension)。"
+          },
+          {
+            id: 40,
+            question: "前臂旋後 (Supination) 的主動肌除了肱二頭肌外，還有哪一條？",
+            options: ["旋後肌 (Supinator)", "肱橈肌", "橈側伸腕長肌", "伸指肌"],
+            correctAnswer: "旋後肌 (Supinator)",
+            explanation: "旋後動作主要由肱二頭肌（強力、快速時）與旋後肌（慢速、無阻力時）負責。"
+          },
+          {
+            id: 41,
+            question: "關於肱三頭肌 (Triceps)，哪一個頭的徵召通常最晚 (需要最大阻力時才加入)？",
+            options: ["內側頭", "外側頭", "長頭", "同時徵召"],
+            correctAnswer: "長頭",
+            explanation: "一般伸肘由內側頭先行，外側頭隨後，長頭通常在阻力較大時才被大量徵召 (Law of Parsimony)。"
+          },
+          {
+            id: 42,
+            question: "造成「槍托變形 (Gunstock deformity)」或肘內翻 (Cubitus Varus) 的常見原因是？",
+            options: ["兒童肱骨髁上骨折癒合不良", "橈骨頭脫位", "尺神經受損", "鷹嘴突骨折"],
+            correctAnswer: "兒童肱骨髁上骨折癒合不良",
+            explanation: "兒童肱骨髁上骨折若遠端骨塊向內側偏移或旋轉，癒合後易形成肘內翻畸形。"
+          },
+          {
+            id: 43,
+            question: "尺骨切跡 (Ulnar notch) 位於哪個骨頭上？",
+            options: ["尺骨近端", "肱骨遠端", "橈骨遠端", "橈骨近端"],
+            correctAnswer: "橈骨遠端",
+            explanation: "尺骨切跡位於橈骨遠端內側，與尺骨頭形成橈尺遠端關節。"
+          },
+          {
+            id: 44,
+            question: "旋前圓肌症候群 (Pronator Teres Syndrome) 壓迫的是哪條神經？",
+            options: ["尺神經", "橈神經", "正中神經", "肌皮神經"],
+            correctAnswer: "正中神經",
+            explanation: "正中神經穿過旋前圓肌的兩個頭之間，若肌肉緊繃或肥大可能造成壓迫。"
+          },
+          {
+            id: 45,
+            question: "下列關於橈骨頭 (Radial Head) 的敘述，何者正確？",
+            options: ["形狀是完全圓形", "在旋前/旋後時會原地轉動", "不參與肘關節屈伸", "與尺骨沒有接觸"],
+            correctAnswer: "在旋前/旋後時會原地轉動",
+            explanation: "橈骨頭在橈尺近端關節處，於環狀韌帶內進行自轉 (Spin)，產生旋前旋後動作。"
+          },
+          {
+            id: 46,
+            question: "前臂的中立位 (Neutral Position) 定義為？",
+            options: ["大拇指朝上 (Thumbs up)", "手掌朝上", "手掌朝下", "手背朝內"],
+            correctAnswer: "大拇指朝上 (Thumbs up)",
+            explanation: "解剖姿勢是旋後 (手掌朝前)，中立位則是介於旋前與旋後之間，即大拇指朝上的姿勢。"
+          },
+          {
+            id: 47,
+            question: "在伏地挺身 (Push-up) 的下降階段 (身體接近地板)，肘關節肌群的收縮型態為？",
+            options: ["肱三頭肌離心收縮", "肱三頭肌向心收縮", "肱二頭肌離心收縮", "肱二頭肌向心收縮"],
+            correctAnswer: "肱三頭肌離心收縮",
+            explanation: "下降時重力使肘屈曲，肱三頭肌（伸肌）必須進行離心收縮來控制下降速度。"
+          },
+          {
+            id: 48,
+            question: "尺側副韌帶重建手術通常被稱為？",
+            options: ["Tommy John Surgery", "Bankart Repair", "Rotator Cuff Repair", "Carpal Tunnel Release"],
+            correctAnswer: "Tommy John Surgery",
+            explanation: "這是棒球投手常見的手術，利用自體肌腱（如掌長肌）重建受損的內側副韌帶 (UCL)。"
+          },
+          {
+            id: 49,
+            question: "肘屈曲時，尺骨的冠狀突 (Coronoid process) 會進入肱骨的？",
+            options: ["鷹嘴窩", "冠狀窩 (Coronoid fossa)", "橈骨窩", "結節間溝"],
+            correctAnswer: "冠狀窩 (Coronoid fossa)",
+            explanation: "冠狀突位於尺骨前方，屈曲到底時會進入肱骨前方的冠狀窩。"
+          },
+          {
+            id: 50,
+            question: "下列哪一條肌肉的功能最單純，僅負責前臂旋後，且不受肘角度影響太大？",
+            options: ["旋後肌 (Supinator)", "肱二頭肌", "肱橈肌", "旋前圓肌"],
+            correctAnswer: "旋後肌 (Supinator)",
+            explanation: "旋後肌是單關節肌，專職負責旋後，不像肱二頭肌會受到肘屈伸角度的影響。"
+          }
+        ];
+
+        // --- 全局變數 ---
+        let appState = 'home'; // home, quiz, result
+        let questions = [];
+        let currentQIndex = 0;
+        let userAnswers = {}; // { questionId: selectedOptionString }
+        let timeLeft = 3600; // 1 hour
+        let timerInterval = null;
+        let score = 0;
+
+        // --- 輔助函式 ---
+        const shuffleArray = (array) => {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        };
+
+        const generateQuizSession = () => {
+            const selectedQuestions = shuffleArray(FULL_QUESTION_BANK).slice(0, 10);
+            return selectedQuestions.map(q => {
+                const shuffledOptions = shuffleArray(q.options);
+                return {
+                    ...q,
+                    shuffledOptions
+                };
+            });
+        };
+
+        const formatTime = (seconds) => {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        };
+
+        // --- 邏輯控制 ---
+
+        function startQuiz() {
+            questions = generateQuizSession();
+            currentQIndex = 0;
+            userAnswers = {};
+            timeLeft = 3600;
+            score = 0;
+            appState = 'quiz';
+            
+            // 啟動計時器
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    submitQuiz();
+                }
+            }, 1000);
+
+            render();
+        }
+
+        function handleOptionSelect(option) {
+            const currentQ = questions[currentQIndex];
+            userAnswers[currentQ.id] = option;
+            render(); // 重新渲染以顯示選中狀態
+        }
+
+        function nextQuestion() {
+            if (currentQIndex < questions.length - 1) {
+                currentQIndex++;
+                render();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQIndex > 0) {
+                currentQIndex--;
+                render();
+            }
+        }
+
+        function submitQuiz() {
+            clearInterval(timerInterval);
+            let correctCount = 0;
+            questions.forEach(q => {
+                if (userAnswers[q.id] === q.correctAnswer) {
+                    correctCount++;
+                }
+            });
+            score = correctCount;
+            appState = 'result';
+            render();
+            // 滾動到頂部
+            window.scrollTo(0, 0);
+        }
+
+        function updateTimerDisplay() {
+            const timerEl = document.getElementById('timer-display');
+            if (timerEl) {
+                timerEl.textContent = formatTime(timeLeft);
+                if (timeLeft < 60) {
+                    timerEl.classList.add('text-red-400', 'animate-pulse');
+                    timerEl.classList.remove('text-teal-400');
+                }
+            }
+        }
+
+        // --- 渲染 (View) ---
+
+        function render() {
+            const app = document.getElementById('app');
+            app.innerHTML = ''; // 清空
+
+            if (appState === 'home') {
+                renderHome(app);
+            } else if (appState === 'quiz') {
+                renderQuiz(app);
+            } else if (appState === 'result') {
+                renderResult(app);
+            }
+            // 初始化圖示
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        function renderHome(container) {
+            container.innerHTML = `
+                <div class="min-h-screen flex flex-col items-center justify-center p-4 fade-in">
+                    <div class="max-w-2xl w-full bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 text-center space-y-8">
+                        <div class="space-y-4">
+                            <div class="flex justify-center">
+                                <i data-lucide="book-open" class="w-16 h-16 text-blue-400"></i>
+                            </div>
+                            <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400 py-2">
+                                SMR讀書會<br />肘關節主題測驗
+                            </h1>
+                            <p class="text-slate-400 text-lg">
+                                隨機10題測驗，作答時間60分鐘
+                            </p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left bg-slate-900/50 p-6 rounded-xl border border-slate-700">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-blue-500/20 p-2 rounded-lg text-blue-400"><i data-lucide="clock" class="w-5 h-5"></i></div>
+                                <div>
+                                    <p class="text-sm text-slate-500">限時</p>
+                                    <p class="font-semibold">1 小時</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-teal-500/20 p-2 rounded-lg text-teal-400"><i data-lucide="book-open" class="w-5 h-5"></i></div>
+                                <div>
+                                    <p class="text-sm text-slate-500">題數</p>
+                                    <p class="font-semibold">10 題</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-purple-500/20 p-2 rounded-lg text-purple-400"><i data-lucide="award" class="w-5 h-5"></i></div>
+                                <div>
+                                    <p class="text-sm text-slate-500">及格</p>
+                                    <p class="font-semibold">60 分</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="startQuiz()" class="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-500 hover:to-teal-500 text-white text-2xl font-bold py-4 rounded-xl transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-blue-500/25">
+                            開始測驗
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderQuiz(container) {
+            const currentQ = questions[currentQIndex];
+            const progress = ((currentQIndex + 1) / questions.length) * 100;
+            const isLastQuestion = currentQIndex === questions.length - 1;
+
+            let optionsHtml = currentQ.shuffledOptions.map((option) => {
+                const isSelected = userAnswers[currentQ.id] === option;
+                const buttonClass = isSelected 
+                    ? 'bg-blue-600/20 border-blue-500 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)]' 
+                    : 'bg-slate-700/50 border-transparent hover:bg-slate-700 hover:border-slate-600 text-slate-300';
+                
+                const circleClass = isSelected
+                    ? 'border-blue-400 bg-blue-500 text-white'
+                    : 'border-slate-500 text-transparent group-hover:border-slate-400';
+
+                return `
+                    <button onclick="handleOptionSelect('${option.replace(/'/g, "\\'")}')" class="w-full text-left p-5 rounded-xl text-xl transition-all duration-200 border-2 flex items-center group ${buttonClass}">
+                        <div class="w-8 h-8 rounded-full border-2 mr-4 flex items-center justify-center flex-shrink-0 transition-colors ${circleClass}">
+                            ${isSelected ? '<div class="w-3 h-3 bg-white rounded-full"></div>' : ''}
+                        </div>
+                        ${option}
+                    </button>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="min-h-screen flex flex-col items-center p-4 md:p-8 fade-in">
+                    <!-- Header -->
+                    <div class="w-full max-w-3xl flex justify-between items-center mb-6 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
+                        <div class="text-slate-400 font-medium">
+                            第 <span class="text-blue-400 text-xl font-bold">${currentQIndex + 1}</span> / ${questions.length} 題
+                        </div>
+                        <div class="flex items-center font-mono text-xl font-bold text-teal-400">
+                            <i data-lucide="clock" class="w-6 h-6 mr-2"></i>
+                            <span id="timer-display">${formatTime(timeLeft)}</span>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full max-w-3xl h-2 bg-slate-800 rounded-full mb-8 overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-blue-500 to-teal-400 transition-all duration-300 ease-out" style="width: ${progress}%"></div>
+                    </div>
+
+                    <!-- Question Card -->
+                    <div class="w-full max-w-3xl bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-6 md:p-10 flex-grow flex flex-col relative overflow-hidden">
+                        <!-- Background decoration -->
+                        <div class="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+                        
+                        <h2 class="text-2xl md:text-3xl font-bold leading-relaxed mb-8 text-slate-100 relative z-10">
+                            ${currentQ.question}
+                        </h2>
+
+                        <div class="space-y-4 relative z-10 flex-grow">
+                            ${optionsHtml}
+                        </div>
+
+                        <!-- Navigation -->
+                        <div class="flex justify-between items-center mt-8 pt-8 border-t border-slate-700 relative z-10">
+                            <button onclick="prevQuestion()" ${currentQIndex === 0 ? 'disabled' : ''} class="flex items-center px-6 py-3 rounded-lg text-lg font-medium transition-colors ${currentQIndex === 0 ? 'text-slate-600 cursor-not-allowed' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}">
+                                <i data-lucide="chevron-left" class="w-6 h-6 mr-1"></i> 上一題
+                            </button>
+
+                            ${isLastQuestion ? `
+                                <button onclick="submitQuiz()" class="flex items-center px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-lg font-bold shadow-lg shadow-green-500/25 transition-all transform hover:scale-105">
+                                    繳交試卷 <i data-lucide="check-circle" class="w-6 h-6 ml-2"></i>
+                                </button>
+                            ` : `
+                                <button onclick="nextQuestion()" class="flex items-center px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-lg font-medium transition-colors">
+                                    下一題 <i data-lucide="chevron-right" class="w-6 h-6 ml-1"></i>
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderResult(container) {
+            let reviewHtml = questions.map((q, idx) => {
+                const userAnswer = userAnswers[q.id];
+                const isCorrect = userAnswer === q.correctAnswer;
+                
+                return `
+                    <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+                        <div class="p-4 flex items-start gap-4 ${isCorrect ? 'bg-green-500/10' : 'bg-red-500/10'}">
+                            <div class="mt-1 flex-shrink-0">
+                                ${isCorrect 
+                                    ? '<i data-lucide="check-circle" class="w-6 h-6 text-green-400"></i>' 
+                                    : '<i data-lucide="x-circle" class="w-6 h-6 text-red-400"></i>'}
+                            </div>
+                            <div class="flex-grow">
+                                <h4 class="text-lg font-bold text-slate-200 mb-4">
+                                    <span class="text-slate-500 mr-2">${idx + 1}.</span>
+                                    ${q.question}
+                                </h4>
+                                
+                                <div class="space-y-2 mb-4">
+                                    <div class="p-3 rounded-lg flex items-center ${isCorrect ? 'bg-green-500/20 text-green-200' : 'bg-red-500/20 text-red-200'}">
+                                        <span class="text-sm font-bold w-16 opacity-70">您的回答</span>
+                                        <span>${userAnswer || "(未作答)"}</span>
+                                    </div>
+                                    ${!isCorrect ? `
+                                    <div class="p-3 rounded-lg bg-green-500/20 text-green-200 flex items-center">
+                                        <span class="text-sm font-bold w-16 opacity-70">正確答案</span>
+                                        <span>${q.correctAnswer}</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+
+                                <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
+                                    <p class="text-sm text-blue-300 font-bold mb-1">解析：</p>
+                                    <p class="text-slate-300 leading-relaxed">${q.explanation}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8 fade-in">
+                    <div class="max-w-4xl mx-auto space-y-8">
+                        
+                        <!-- Score Card -->
+                        <div class="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 text-center relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-teal-400"></div>
+                            <h2 class="text-3xl font-bold text-slate-300 mb-2">測驗結果</h2>
+                            <div class="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-400 to-teal-400 my-6">
+                                ${score * 10} <span class="text-2xl text-slate-500 font-medium">分</span>
+                            </div>
+                            <p class="text-xl text-slate-400 mb-8">
+                                答對 ${score} / ${questions.length} 題
+                            </p>
+                            <button onclick="startQuiz()" class="inline-flex items-center px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-blue-500/25">
+                                <i data-lucide="rotate-ccw" class="w-5 h-5 mr-2"></i> 重新測驗
+                            </button>
+                        </div>
+
+                        <!-- Detailed Review -->
+                        <div class="space-y-6">
+                            <h3 class="text-2xl font-bold text-slate-300 px-2 border-l-4 border-blue-500">詳細解析</h3>
+                            ${reviewHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- 初始化 ---
+        render();
+
+    </script>
+</body>
+</html>
