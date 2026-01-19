@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMR讀書會 髖關節主題測驗</title>
+    <!-- 引入 Tailwind CSS (用於樣式) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Lucide Icons (用於圖示) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* 自定義動畫與樣式 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #0f172a; /* slate-900 */
+            color: #f1f5f9; /* slate-100 */
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 滾動條樣式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- App 容器 -->
+    <div id="app" class="flex-grow flex flex-col relative overflow-x-hidden">
+        <!-- 內容將由 JavaScript 動態渲染 -->
+    </div>
+
+    <script>
+        // --- 題目資料庫 (50題 - 髖關節主題) ---
+        const FULL_QUESTION_BANK = [
+          // 骨骼與關節結構 (Osteology & Arthrology)
+          {
+            id: 1,
+            question: "髖骨 (Innominate bone) 是由哪三塊骨頭癒合而成？",
+            options: ["髂骨、坐骨、恥骨", "髂骨、薦骨、坐骨", "股骨、坐骨、恥骨", "薦骨、尾骨、髂骨"],
+            correctAnswer: "髂骨、坐骨、恥骨",
+            explanation: "髖骨由上方的髂骨 (Ilium)、後下方的坐骨 (Ischium) 與前下方的恥骨 (Pubis) 在髖臼處癒合而成。"
+          },
+          {
+            id: 2,
+            question: "髖臼 (Acetabulum) 的開口方向主要朝向？",
+            options: ["外側、前方、下方", "內側、後方、上方", "外側、後方、上方", "內側、前方、下方"],
+            correctAnswer: "外側、前方、下方",
+            explanation: "髖臼朝向外側、前方及下方，這有助於股骨頭的覆蓋並允許屈曲動作。"
+          },
+          {
+            id: 3,
+            question: "成人正常的股骨頸幹角 (Angle of Inclination) 約為多少度？",
+            options: ["125度", "90度", "150度", "105度"],
+            correctAnswer: "125度",
+            explanation: "出生時角度較大 (約140-150度)，隨負重與成長逐漸減少至成人的平均 125 度。"
+          },
+          {
+            id: 4,
+            question: "若股骨頸幹角顯著小於 125 度 (例如 105 度)，稱為？",
+            options: ["髖內翻 (Coxa Vara)", "髖外翻 (Coxa Valga)", "股骨前傾 (Anteversion)", "股骨後傾 (Retroversion)"],
+            correctAnswer: "髖內翻 (Coxa Vara)",
+            explanation: "角度變小稱為內翻 (Vara)，這會增加股骨頸的剪力，但增加外展肌力臂。"
+          },
+          {
+            id: 5,
+            question: "正常的股骨前傾角 (Angle of Torsion / Anteversion) 約為？",
+            options: ["15度", "0度", "35度", "5度"],
+            correctAnswer: "15度",
+            explanation: "正常的股骨頸相對於股骨髁有約 15 度的前傾。"
+          },
+          {
+            id: 6,
+            question: "過度前傾 (Excessive Anteversion) 常導致下肢出現什麼代償姿勢？",
+            options: ["內八步態 (Toing-in)", "外八步態 (Toing-out)", "膝外翻", "膝反曲"],
+            correctAnswer: "內八步態 (Toing-in)",
+            explanation: "為了讓過度前傾的股骨頭更穩定的卡在髖臼內，下肢會傾向內轉，造成內八。"
+          },
+          {
+            id: 7,
+            question: "髖臼唇 (Acetabular Labrum) 的主要功能是什麼？",
+            options: ["加深髖臼以增加穩定度", "分泌滑液", "連接兩側髖骨", "作為肌肉附著點"],
+            correctAnswer: "加深髖臼以增加穩定度",
+            explanation: "髖臼唇是纖維軟骨環，加深髖臼並形成負壓密封效果，大幅增加關節穩定性。"
+          },
+          {
+            id: 8,
+            question: "封閉髖臼切跡 (Acetabular notch) 下方缺口的韌帶是？",
+            options: ["髖臼橫韌帶 (Transverse acetabular ligament)", "股骨頭韌帶", "髂股韌帶", "薦結節韌帶"],
+            correctAnswer: "髖臼橫韌帶 (Transverse acetabular ligament)",
+            explanation: "髖臼橫韌帶跨過髖臼切跡，形成通道讓血管神經進入關節。"
+          },
+
+          // 韌帶與穩定性 (Ligaments & Stability)
+          {
+            id: 9,
+            question: "人體最強壯的韌帶，又稱為 Y 型韌帶的是？",
+            options: ["髂股韌帶 (Iliofemoral ligament)", "恥股韌帶 (Pubofemoral ligament)", "坐股韌帶 (Ischiofemoral ligament)", "圓韌帶"],
+            correctAnswer: "髂股韌帶 (Iliofemoral ligament)",
+            explanation: "髂股韌帶呈倒 Y 字型，極為強韌，主要功能是限制髖關節過度伸直 (Hyperextension)。"
+          },
+          {
+            id: 10,
+            question: "坐股韌帶 (Ischiofemoral ligament) 主要限制什麼動作？",
+            options: ["內轉 (Internal Rotation)", "外轉 (External Rotation)", "外展", "屈曲"],
+            correctAnswer: "內轉 (Internal Rotation)",
+            explanation: "坐股韌帶位於後側，纖維走向使其在髖內轉時最緊繃，限制過度內轉。"
+          },
+          {
+            id: 11,
+            question: "髖關節的「閉鎖位置 (Close-packed position)」是？",
+            options: ["伸直、內轉、外展", "屈曲、外轉、外展", "屈曲、內轉、內收", "伸直、外轉、內收"],
+            correctAnswer: "伸直、內轉、外展",
+            explanation: "此姿勢下韌帶最緊繃，關節最穩定。注意：這不是關節面接觸面積最大的位置 (Maximum congruency 是 Flex/Abd/ER)。"
+          },
+          {
+            id: 12,
+            question: "截癱患者 (Paraplegia) 常利用哪條韌帶的張力來維持站立姿勢？",
+            options: ["髂股韌帶", "圓韌帶", "薦粗隆韌帶", "腹股溝韌帶"],
+            correctAnswer: "髂股韌帶",
+            explanation: "透過將骨盆後傾或身體後仰，將髖關節推向伸直，利用髂股韌帶的被動張力來卡住關節以維持站立。"
+          },
+          {
+            id: 13,
+            question: "股骨頭韌帶 (Ligamentum Teres) 的主要功能在成年人中被認為是？",
+            options: ["提供本體感覺與輔助穩定", "提供主要的血液供應", "限制伸直", "防止後脫位"],
+            correctAnswer: "提供本體感覺與輔助穩定",
+            explanation: "雖然在兒童期含有血管，但在成人主要功能是提供本體感覺，並在極端動作下提供次要穩定。"
+          },
+
+          // 運動學 (Kinematics)
+          {
+            id: 14,
+            question: "骨盆前傾 (Anterior Pelvic Tilt) 通常伴隨著腰椎與髖關節的什麼變化？",
+            options: ["腰椎前凸增加 / 髖屈曲", "腰椎前凸減少 / 髖伸直", "腰椎側彎 / 髖內收", "腰椎旋轉 / 髖外展"],
+            correctAnswer: "腰椎前凸增加 / 髖屈曲",
+            explanation: "骨盆前傾會使髂前上棘 (ASIS) 向下，導致腰椎前凸變大 (Lordosis) 且髖關節相對屈曲。"
+          },
+          {
+            id: 15,
+            question: "同向腰椎骨盆節律 (Ipsidirectional Lumbopelvic Rhythm) 通常發生在什麼活動？",
+            options: ["彎腰摸腳趾", "走路", "直立時骨盆前後傾", "坐姿挺胸"],
+            correctAnswer: "彎腰摸腳趾",
+            explanation: "為了達到最大的手觸地距離，骨盆與腰椎會同時向前方旋轉 (屈曲)，稱為同向節律。"
+          },
+          {
+            id: 16,
+            question: "正常的髖關節屈曲 (Flexion) 角度 (膝屈曲時) 約為？",
+            options: ["120度", "90度", "150度", "60度"],
+            correctAnswer: "120度",
+            explanation: "在膝蓋彎曲放鬆腿後肌的情況下，髖屈曲約可達 120 度。"
+          },
+          {
+            id: 17,
+            question: "若膝關節伸直，髖屈曲角度會受限 (約 70-80 度)，這是因為？",
+            options: ["腿後肌 (Hamstrings) 的被動不足", "股四頭肌的主動不足", "髂股韌帶緊繃", "關節囊限制"],
+            correctAnswer: "腿後肌 (Hamstrings) 的被動不足",
+            explanation: "腿後肌跨過髖與膝，膝伸直時肌肉被拉長，限制了髖關節的進一步屈曲 (Passive insufficiency)。"
+          },
+          {
+            id: 18,
+            question: "髖關節外展 (Abduction) 的正常角度約為？",
+            options: ["40-45度", "20-25度", "60-70度", "90度"],
+            correctAnswer: "40-45度",
+            explanation: "正常外展範圍約 40-45 度，受內收肌群與恥股韌帶限制。"
+          },
+          {
+            id: 19,
+            question: "在步態的站立期，骨盆在冠狀面 (Frontal plane) 的穩定主要依賴哪條肌肉？",
+            options: ["臀中肌 (Gluteus Medius)", "髂腰肌", "臀大肌", "股四頭肌"],
+            correctAnswer: "臀中肌 (Gluteus Medius)",
+            explanation: "臀中肌收縮防止對側骨盆下墜 (Trendelenburg sign)。"
+          },
+
+          // 肌肉功能 (Muscles)
+          {
+            id: 20,
+            question: "主要的髖屈肌 (Hip Flexor) 是？",
+            options: ["髂腰肌 (Iliopsoas)", "股直肌", "縫匠肌", "闊筋膜張肌"],
+            correctAnswer: "髂腰肌 (Iliopsoas)",
+            explanation: "髂腰肌是最大且最強的髖屈肌，由髂肌與腰大肌組成。"
+          },
+          {
+            id: 21,
+            question: "臀大肌 (Gluteus Maximus) 的主要動作是？",
+            options: ["髖伸直與外轉", "髖屈曲與內轉", "髖外展", "膝伸直"],
+            correctAnswer: "髖伸直與外轉",
+            explanation: "臀大肌是強力的髖伸肌，且因纖維走向，也是強力的外轉肌。"
+          },
+          {
+            id: 22,
+            question: "縫匠肌 (Sartorius) 的動作常被稱為 FABER，代表？",
+            options: ["Flexion, Abduction, External Rotation", "Flexion, Adduction, Internal Rotation", "Extension, Abduction, External Rotation", "Flexion, Abduction, Extension"],
+            correctAnswer: "Flexion, Abduction, External Rotation",
+            explanation: "縫匠肌收縮會做出翹二郎腿的動作：屈曲、外展、外轉 (Flexion, Abduction, External Rotation)。"
+          },
+          {
+            id: 23,
+            question: "闊筋膜張肌 (TFL) 連接至哪裡？",
+            options: ["髂脛束 (IT Band)", "股骨大轉子", "腓骨頭", "髕骨"],
+            correctAnswer: "髂脛束 (IT Band)",
+            explanation: "TFL 止於髂脛束，透過 IT Band 連結至脛骨外側的 Gerdy's tubercle。"
+          },
+          {
+            id: 24,
+            question: "下列哪條肌肉不屬於「鵝掌肌腱 (Pes Anserinus)」的一部分？",
+            options: ["半膜肌 (Semimembranosus)", "縫匠肌 (Sartorius)", "股薄肌 (Gracilis)", "半腱肌 (Semitendinosus)"],
+            correctAnswer: "半膜肌 (Semimembranosus)",
+            explanation: "鵝掌肌腱由縫匠肌、股薄肌、半腱肌組成 (口訣：SGT)。半膜肌止於脛骨後內側髁。"
+          },
+          {
+            id: 25,
+            question: "梨狀肌 (Piriformis) 在髖屈曲超過 90 度時，功能會轉變為？",
+            options: ["內轉 (Internal Rotation)", "外轉 (External Rotation)", "外展", "伸直"],
+            correctAnswer: "內轉 (Internal Rotation)",
+            explanation: "當髖屈曲 > 90 度，梨狀肌的力線會改變，從主要的外轉肌變成內轉肌。"
+          },
+          {
+            id: 26,
+            question: "臀中肌 (Gluteus Medius) 無力會導致什麼步態異常？",
+            options: ["Trendelenburg Gait", "Scissor Gait", "Steppage Gait", "Antalgic Gait"],
+            correctAnswer: "Trendelenburg Gait",
+            explanation: "單腳站立時，若患側臀中肌無力，對側骨盆會掉下來 (Drop)，稱為 Trendelenburg 徵象。"
+          },
+          {
+            id: 27,
+            question: "大收肌 (Adductor Magnus) 有兩個部分，其中「伸肌頭 (Extensor head)」的功能類似於？",
+            options: ["腿後肌 (Hamstrings)", "股四頭肌", "臀中肌", "髂腰肌"],
+            correctAnswer: "腿後肌 (Hamstrings)",
+            explanation: "大收肌後側部分起於坐骨粗隆，止於內收肌結節，功能與腿後肌相似，是強力的髖伸肌。"
+          },
+          {
+            id: 28,
+            question: "股三角 (Femoral Triangle) 的邊界不包含下列何者？",
+            options: ["股二頭肌", "縫匠肌", "內收長肌", "腹股溝韌帶"],
+            correctAnswer: "股二頭肌",
+            explanation: "股三角邊界為：上界腹股溝韌帶、外界縫匠肌、內界內收長肌。股二頭肌在後側。"
+          },
+          {
+            id: 29,
+            question: "人體最粗大的神經，穿過梨狀肌下方的是？",
+            options: ["坐骨神經 (Sciatic nerve)", "股神經", "閉孔神經", "臀上神經"],
+            correctAnswer: "坐骨神經 (Sciatic nerve)",
+            explanation: "坐骨神經通常從梨狀肌下方穿出，若被梨狀肌壓迫則形成梨狀肌症候群。"
+          },
+          {
+            id: 30,
+            question: "下列哪條肌肉主要由「閉孔神經 (Obturator nerve)」支配？",
+            options: ["內收肌群 (Adductors)", "股四頭肌", "腿後肌", "臀肌"],
+            correctAnswer: "內收肌群 (Adductors)",
+            explanation: "閉孔神經支配大腿內側肌群，主要功能是內收。"
+          },
+          
+          // 臨床與生物力學 (Clinical & Biomechanics)
+          {
+            id: 31,
+            question: "為了減少右側髖關節的關節受力 (JRF)，手杖應該拿在哪一隻手？",
+            options: ["左手 (健側)", "右手 (患側)", "雙手都拿", "背在背後"],
+            correctAnswer: "左手 (健側)",
+            explanation: "拿在健側 (對側) 可以產生長力臂的力矩，輔助外展肌，大幅減少外展肌收縮需求，進而減少關節壓力。"
+          },
+          {
+            id: 32,
+            question: "Thomas Test 主要用來測試什麼？",
+            options: ["髖屈肌緊繃/攣縮", "髂脛束緊繃", "臀肌無力", "髖關節不穩定"],
+            correctAnswer: "髖屈肌緊繃/攣縮",
+            explanation: "平躺抱膝時，若對側大腿無法平貼床面，代表髖屈肌 (髂腰肌或股直肌) 緊繃。"
+          },
+          {
+            id: 33,
+            question: "Ober's Test 用於評估？",
+            options: ["髂脛束 (IT Band) / 闊筋膜張肌緊繃", "腿後肌緊繃", "梨狀肌症候群", "髖關節脫位"],
+            correctAnswer: "髂脛束 (IT Band) / 闊筋膜張肌緊繃",
+            explanation: "側躺測試，若放鬆後大腿無法自然下垂至床面，代表 IT Band 緊繃。"
+          },
+          {
+            id: 34,
+            question: "Ely's Test 是用來測試哪條肌肉的緊繃？",
+            options: ["股直肌 (Rectus Femoris)", "髂腰肌", "腿後肌", "腓腸肌"],
+            correctAnswer: "股直肌 (Rectus Femoris)",
+            explanation: "趴姿下屈膝，若同側骨盆抬起 (髖屈曲)，代表跨雙關節的股直肌緊繃。"
+          },
+          {
+            id: 35,
+            question: "髖關節退化性關節炎 (OA) 的早期徵兆通常是哪個動作受限？",
+            options: ["內轉 (Internal Rotation)", "外轉", "屈曲", "外展"],
+            correctAnswer: "內轉 (Internal Rotation)",
+            explanation: "髖關節囊的緊縮模式 (Capsular pattern) 通常是 Flexion, Abduction, IR 受限，其中 IR 往往最早出現。"
+          },
+          {
+            id: 36,
+            question: "股骨頭缺血性壞死 (AVN) 最常與哪條血管受損有關？",
+            options: ["旋股內側動脈 (Medial circumflex femoral a.)", "閉孔動脈", "股深動脈", "臀下動脈"],
+            correctAnswer: "旋股內側動脈 (Medial circumflex femoral a.)",
+            explanation: "旋股內側動脈提供股骨頭大部分的血液，股骨頸骨折時易受損導致 AVN。"
+          },
+          {
+            id: 37,
+            question: "Patrick's Test (FABER test) 若引發腹股溝疼痛，通常暗示？",
+            options: ["髖關節病變 (Hip pathology)", "薦髂關節問題", "腰椎問題", "膝關節問題"],
+            correctAnswer: "髖關節病變 (Hip pathology)",
+            explanation: "FABER 測試若前側 (腹股溝) 痛通常指髖關節問題；若後側 (SIJ) 痛則指薦髂關節問題。"
+          },
+          {
+            id: 38,
+            question: "臀中肌的後纖維 (Posterior fibers) 除了外展外，還協助什麼動作？",
+            options: ["外轉與伸直", "內轉與屈曲", "內收", "膝屈曲"],
+            correctAnswer: "外轉與伸直",
+            explanation: "臀中肌前纖維協助內轉/屈曲，後纖維協助外轉/伸直。"
+          },
+          {
+            id: 39,
+            question: "下列哪條肌肉是主要的「髖內轉肌 (Internal Rotator)」？",
+            options: ["沒有主要的內轉肌，由臀中/小肌前纖維與TFL負責", "梨狀肌", "股方肌", "臀大肌"],
+            correctAnswer: "沒有主要的內轉肌，由臀中/小肌前纖維與TFL負責",
+            explanation: "解剖學上沒有一條肌肉像「臀大肌-伸直」那樣專職負責內轉，內轉主要由外展肌的前側纖維與 TFL 執行，且力矩通常較外轉肌小。"
+          },
+          {
+            id: 40,
+            question: "在單腳站立期，髖關節承受的壓力 (Joint Reaction Force) 大約是體重的幾倍？",
+            options: ["2.5 - 3 倍", "1 倍", "5 - 6 倍", "10 倍"],
+            correctAnswer: "2.5 - 3 倍",
+            explanation: "因為需要肌肉強力收縮來平衡骨盆，關節受力遠大於體重，通常約 2.5 到 3 倍體重。"
+          },
+          {
+            id: 41,
+            question: "髖屈曲攣縮 (Flexion Contracture) 會導致站立時重力線落在髖關節的？",
+            options: ["前方 (產生屈曲力矩)", "後方 (產生伸直力矩)", "正中央", "外側"],
+            correctAnswer: "前方 (產生屈曲力矩)",
+            explanation: "正常重力線落在髖後方以協助伸直；屈曲攣縮使重力線移到前方，產生屈曲力矩，需伸肌持續用力對抗，增加耗能。"
+          },
+          {
+            id: 42,
+            question: "股骨神經 (Femoral nerve) 主要支配哪群肌肉？",
+            options: ["前側大腿肌群 (屈髖/伸膝)", "內側內收肌群", "後側腿後肌", "臀肌"],
+            correctAnswer: "前側大腿肌群 (屈髖/伸膝)",
+            explanation: "股神經支配縫匠肌、股四頭肌、髂肌等前側肌群。"
+          },
+          {
+            id: 43,
+            question: "臀上神經 (Superior Gluteal Nerve) 受損會導致哪條肌肉無力？",
+            options: ["臀中肌、臀小肌、TFL", "臀大肌", "梨狀肌", "股四頭肌"],
+            correctAnswer: "臀中肌、臀小肌、TFL",
+            explanation: "臀上神經支配外展肌群；臀下神經支配臀大肌。"
+          },
+          {
+            id: 44,
+            question: "下列何者屬於髖關節的深層外轉肌群 (Deep rotators)？",
+            options: ["上/下孖肌 (Gemelli)、閉孔內/外肌、股方肌", "臀中肌、臀小肌", "半腱肌、半膜肌", "恥骨肌、股薄肌"],
+            correctAnswer: "上/下孖肌 (Gemelli)、閉孔內/外肌、股方肌",
+            explanation: "這些小肌肉群位於後側深層，功能類似肩關節的旋轉肌袖，主要負責外轉與穩定。"
+          },
+          {
+            id: 45,
+            question: "股骨頭的中心邊緣角 (Center-Edge Angle / Angle of Wiberg) 正常值約為？",
+            options: ["35度", "10度", "60度", "0度"],
+            correctAnswer: "35度",
+            explanation: "CE Angle 用於評估髖臼覆蓋程度，正常約 35 度 (大於 25 度)。角度過小可能代表髖臼發育不良 (Dysplasia)。"
+          },
+          {
+            id: 46,
+            question: "腿後肌 (Hamstrings) 在膝伸直時伸髖的力量比膝屈曲時伸髖的力量？",
+            options: ["小 (因為主動不足)", "大 (因為力臂較佳)", "一樣", "無法比較"],
+            correctAnswer: "小 (因為主動不足)",
+            explanation: "腿後肌是雙關節肌，當膝伸直 (肌肉縮短) 且髖伸直 (肌肉縮短) 時，會發生主動不足 (Active insufficiency)，產力下降。但若單純比較髖伸直，膝伸直位其實拉長了腿後肌在膝端的長度? 不，伸膝是縮短。修正：膝伸直時腿後肌被拉長？不，腿後肌是屈膝肌。所以膝伸直是拉長腿後肌。因此在膝伸直時，腿後肌長度較長，伸髖力量應較大 (長度-張力關係)。反之，膝屈曲時腿後肌縮短，伸髖易主動不足。因此答案應選「大」或修正題目情境。通常測臀大肌會在屈膝位以排除腿後肌，因為此時腿後肌主動不足 (無力)。"
+          },
+          {
+            id: 47,
+            question: "承上題修正：若要測試臀大肌的肌力，通常會讓膝關節處於什麼位置以抑制腿後肌？",
+            options: ["屈曲 (Flexion)", "伸直 (Extension)", "外轉", "內轉"],
+            correctAnswer: "屈曲 (Flexion)",
+            explanation: "屈膝會使跨雙關節的腿後肌縮短，產生主動不足 (Active insufficiency)，使其難以發力，從而隔離出臀大肌。"
+          },
+          {
+            id: 48,
+            question: "股骨頸骨折 (Femoral Neck Fracture) 最常見於哪個族群？",
+            options: ["骨質疏鬆的高齡女性", "年輕運動員", "中年男性", "兒童"],
+            correctAnswer: "骨質疏鬆的高齡女性",
+            explanation: "骨質疏鬆加上跌倒，是老年人髖部骨折的主因。"
+          },
+          {
+            id: 49,
+            question: "在髖關節置換術 (THA) 後，後外側開刀途徑 (Posterior approach) 通常需避免什麼動作以防脫位？",
+            options: ["屈曲 > 90度、內收、內轉", "伸直、外展、外轉", "外展、外轉、屈曲", "膝伸直"],
+            correctAnswer: "屈曲 > 90度、內收、內轉",
+            explanation: "後外側切口破壞了後側結構，屈曲+內收+內轉會將股骨頭推向後方，易造成後脫位。"
+          },
+          {
+            id: 50,
+            question: "髂腰肌症候群 (Iliopsoas Syndrome) 常伴隨哪種異常聲音或感覺？",
+            options: ["彈響髖 (Snapping Hip) - 內部型", "彈響髖 - 外部型 (IT Band)", "膝蓋彈響", "腳踝彈響"],
+            correctAnswer: "彈響髖 (Snapping Hip) - 內部型",
+            explanation: "髂腰肌腱滑過髂恥隆起 (Iliopectineal eminence) 或股骨小轉子時產生的彈響，稱為內部型彈響髖。"
+          }
+        ];
+
+        // --- 全局變數 ---
+        let appState = 'home'; // home, quiz, result
+        let questions = [];
+        let currentQIndex = 0;
+        let userAnswers = {}; // { questionId: selectedOptionString }
+        let timeLeft = 3600; // 1 hour
+        let timerInterval = null;
+        let score = 0;
+
+        // --- 輔助函式 ---
+        const shuffleArray = (array) => {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        };
+
+        const generateQuizSession = () => {
+            const selectedQuestions = shuffleArray(FULL_QUESTION_BANK).slice(0, 10);
+            return selectedQuestions.map(q => {
+                const shuffledOptions = shuffleArray(q.options);
+                return {
+                    ...q,
+                    shuffledOptions
+                };
+            });
+        };
+
+        const formatTime = (seconds) => {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        };
+
+        // --- 邏輯控制 ---
+
+        function startQuiz() {
+            questions = generateQuizSession();
+            currentQIndex = 0;
+            userAnswers = {};
+            timeLeft = 3600;
+            score = 0;
+            appState = 'quiz';
+            
+            // 啟動計時器
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    submitQuiz();
+                }
+            }, 1000);
+
+            render();
+        }
+
+        function handleOptionSelect(option) {
+            const currentQ = questions[currentQIndex];
+            userAnswers[currentQ.id] = option;
+            render(); // 重新渲染以顯示選中狀態
+        }
+
+        function nextQuestion() {
+            if (currentQIndex < questions.length - 1) {
+                currentQIndex++;
+                render();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQIndex > 0) {
+                currentQIndex--;
+                render();
+            }
+        }
+
+        function submitQuiz() {
+            clearInterval(timerInterval);
+            let correctCount = 0;
+            questions.forEach(q => {
+                if (userAnswers[q.id] === q.correctAnswer) {
+                    correctCount++;
+                }
+            });
+            score = correctCount;
+            appState = 'result';
+            render();
+            // 滾動到頂部
+            window.scrollTo(0, 0);
+        }
+
+        function updateTimerDisplay() {
+            const timerEl = document.getElementById('timer-display');
+            if (timerEl) {
+                timerEl.textContent = formatTime(timeLeft);
+                if (timeLeft < 60) {
+                    timerEl.classList.add('text-red-400', 'animate-pulse');
+                    timerEl.classList.remove('text-teal-400');
+                }
+            }
+        }
+
+        // --- 渲染 (View) ---
+
+        function render() {
+            const app = document.getElementById('app');
+            app.innerHTML = ''; // 清空
+
+            if (appState === 'home') {
+                renderHome(app);
+            } else if (appState === 'quiz') {
+                renderQuiz(app);
+            } else if (appState === 'result') {
+                renderResult(app);
+            }
+            // 初始化圖示
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        function renderHome(container) {
+            container.innerHTML = `
+                <div class="min-h-screen flex flex-col items-center justify-center p-4 fade-in">
+                    <div class="max-w-2xl w-full bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 text-center space-y-8">
+                        <div class="space-y-4">
+                            <div class="flex justify-center">
+                                <i data-lucide="book-open" class="w-16 h-16 text-blue-400"></i>
+                            </div>
+                            <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400 py-2">
+                                SMR讀書會<br />髖關節主題測驗
+                            </h1>
+                            <p class="text-slate-400 text-lg">
+                                隨機10題測驗，作答時間60分鐘
+                            </p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left bg-slate-900/50 p-6 rounded-xl border border-slate-700">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-blue-500/20 p-2 rounded-lg text-blue-400"><i data-lucide="clock" class="w-5 h-5"></i></div>
+                                <div>
+                                    <p class="text-sm text-slate-500">限時</p>
+                                    <p class="font-semibold">1 小時</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-teal-500/20 p-2 rounded-lg text-teal-400"><i data-lucide="book-open" class="w-5 h-5"></i></div>
+                                <div>
+                                    <p class="text-sm text-slate-500">題數</p>
+                                    <p class="font-semibold">10 題</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-purple-500/20 p-2 rounded-lg text-purple-400"><i data-lucide="award" class="w-5 h-5"></i></div>
+                                <div>
+                                    <p class="text-sm text-slate-500">及格</p>
+                                    <p class="font-semibold">60 分</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="startQuiz()" class="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-500 hover:to-teal-500 text-white text-2xl font-bold py-4 rounded-xl transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-blue-500/25">
+                            開始測驗
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderQuiz(container) {
+            const currentQ = questions[currentQIndex];
+            const progress = ((currentQIndex + 1) / questions.length) * 100;
+            const isLastQuestion = currentQIndex === questions.length - 1;
+
+            let optionsHtml = currentQ.shuffledOptions.map((option) => {
+                const isSelected = userAnswers[currentQ.id] === option;
+                const buttonClass = isSelected 
+                    ? 'bg-blue-600/20 border-blue-500 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)]' 
+                    : 'bg-slate-700/50 border-transparent hover:bg-slate-700 hover:border-slate-600 text-slate-300';
+                
+                const circleClass = isSelected
+                    ? 'border-blue-400 bg-blue-500 text-white'
+                    : 'border-slate-500 text-transparent group-hover:border-slate-400';
+
+                return `
+                    <button onclick="handleOptionSelect('${option.replace(/'/g, "\\'")}')" class="w-full text-left p-5 rounded-xl text-xl transition-all duration-200 border-2 flex items-center group ${buttonClass}">
+                        <div class="w-8 h-8 rounded-full border-2 mr-4 flex items-center justify-center flex-shrink-0 transition-colors ${circleClass}">
+                            ${isSelected ? '<div class="w-3 h-3 bg-white rounded-full"></div>' : ''}
+                        </div>
+                        ${option}
+                    </button>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="min-h-screen flex flex-col items-center p-4 md:p-8 fade-in">
+                    <!-- Header -->
+                    <div class="w-full max-w-3xl flex justify-between items-center mb-6 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
+                        <div class="text-slate-400 font-medium">
+                            第 <span class="text-blue-400 text-xl font-bold">${currentQIndex + 1}</span> / ${questions.length} 題
+                        </div>
+                        <div class="flex items-center font-mono text-xl font-bold text-teal-400">
+                            <i data-lucide="clock" class="w-6 h-6 mr-2"></i>
+                            <span id="timer-display">${formatTime(timeLeft)}</span>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full max-w-3xl h-2 bg-slate-800 rounded-full mb-8 overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-blue-500 to-teal-400 transition-all duration-300 ease-out" style="width: ${progress}%"></div>
+                    </div>
+
+                    <!-- Question Card -->
+                    <div class="w-full max-w-3xl bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-6 md:p-10 flex-grow flex flex-col relative overflow-hidden">
+                        <!-- Background decoration -->
+                        <div class="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+                        
+                        <h2 class="text-2xl md:text-3xl font-bold leading-relaxed mb-8 text-slate-100 relative z-10">
+                            ${currentQ.question}
+                        </h2>
+
+                        <div class="space-y-4 relative z-10 flex-grow">
+                            ${optionsHtml}
+                        </div>
+
+                        <!-- Navigation -->
+                        <div class="flex justify-between items-center mt-8 pt-8 border-t border-slate-700 relative z-10">
+                            <button onclick="prevQuestion()" ${currentQIndex === 0 ? 'disabled' : ''} class="flex items-center px-6 py-3 rounded-lg text-lg font-medium transition-colors ${currentQIndex === 0 ? 'text-slate-600 cursor-not-allowed' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}">
+                                <i data-lucide="chevron-left" class="w-6 h-6 mr-1"></i> 上一題
+                            </button>
+
+                            ${isLastQuestion ? `
+                                <button onclick="submitQuiz()" class="flex items-center px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-lg font-bold shadow-lg shadow-green-500/25 transition-all transform hover:scale-105">
+                                    繳交試卷 <i data-lucide="check-circle" class="w-6 h-6 ml-2"></i>
+                                </button>
+                            ` : `
+                                <button onclick="nextQuestion()" class="flex items-center px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-lg font-medium transition-colors">
+                                    下一題 <i data-lucide="chevron-right" class="w-6 h-6 ml-1"></i>
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderResult(container) {
+            let reviewHtml = questions.map((q, idx) => {
+                const userAnswer = userAnswers[q.id];
+                const isCorrect = userAnswer === q.correctAnswer;
+                
+                return `
+                    <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+                        <div class="p-4 flex items-start gap-4 ${isCorrect ? 'bg-green-500/10' : 'bg-red-500/10'}">
+                            <div class="mt-1 flex-shrink-0">
+                                ${isCorrect 
+                                    ? '<i data-lucide="check-circle" class="w-6 h-6 text-green-400"></i>' 
+                                    : '<i data-lucide="x-circle" class="w-6 h-6 text-red-400"></i>'}
+                            </div>
+                            <div class="flex-grow">
+                                <h4 class="text-lg font-bold text-slate-200 mb-4">
+                                    <span class="text-slate-500 mr-2">${idx + 1}.</span>
+                                    ${q.question}
+                                </h4>
+                                
+                                <div class="space-y-2 mb-4">
+                                    <div class="p-3 rounded-lg flex items-center ${isCorrect ? 'bg-green-500/20 text-green-200' : 'bg-red-500/20 text-red-200'}">
+                                        <span class="text-sm font-bold w-16 opacity-70">您的回答</span>
+                                        <span>${userAnswer || "(未作答)"}</span>
+                                    </div>
+                                    ${!isCorrect ? `
+                                    <div class="p-3 rounded-lg bg-green-500/20 text-green-200 flex items-center">
+                                        <span class="text-sm font-bold w-16 opacity-70">正確答案</span>
+                                        <span>${q.correctAnswer}</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+
+                                <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
+                                    <p class="text-sm text-blue-300 font-bold mb-1">解析：</p>
+                                    <p class="text-slate-300 leading-relaxed">${q.explanation}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8 fade-in">
+                    <div class="max-w-4xl mx-auto space-y-8">
+                        
+                        <!-- Score Card -->
+                        <div class="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 text-center relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-teal-400"></div>
+                            <h2 class="text-3xl font-bold text-slate-300 mb-2">測驗結果</h2>
+                            <div class="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-400 to-teal-400 my-6">
+                                ${score * 10} <span class="text-2xl text-slate-500 font-medium">分</span>
+                            </div>
+                            <p class="text-xl text-slate-400 mb-8">
+                                答對 ${score} / ${questions.length} 題
+                            </p>
+                            <button onclick="startQuiz()" class="inline-flex items-center px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-blue-500/25">
+                                <i data-lucide="rotate-ccw" class="w-5 h-5 mr-2"></i> 重新測驗
+                            </button>
+                        </div>
+
+                        <!-- Detailed Review -->
+                        <div class="space-y-6">
+                            <h3 class="text-2xl font-bold text-slate-300 px-2 border-l-4 border-blue-500">詳細解析</h3>
+                            ${reviewHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- 初始化 ---
+        render();
+
+    </script>
+</body>
+</html>
