@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMR讀書會 脊椎主題測驗</title>
+    <!-- 引入 Tailwind CSS (用於樣式) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Lucide Icons (用於圖示) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* 自定義動畫與樣式 */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #0f172a; /* slate-900 */
+            color: #f1f5f9; /* slate-100 */
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 滾動條樣式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- App 容器 -->
+    <div id="app" class="flex-grow flex flex-col relative overflow-x-hidden">
+        <!-- 內容將由 JavaScript 動態渲染 -->
+    </div>
+
+    <script>
+        // --- 題目資料庫 (50題 - 脊椎主題) ---
+        const FULL_QUESTION_BANK = [
+          // 總論與曲線 (General & Curves)
+          {
+            id: 1,
+            question: "成人脊柱在矢狀面 (Sagittal plane) 上通常有幾個交替的曲線？",
+            options: ["2個", "3個", "4個", "5個"],
+            correctAnswer: "4個",
+            explanation: "分別是頸椎前凸 (Lordosis)、胸椎後凸 (Kyphosis)、腰椎前凸 (Lordosis) 與薦尾椎後凸 (Kyphosis)。"
+          },
+          {
+            id: 2,
+            question: "下列哪一個脊柱曲線屬於「初級曲線 (Primary curve)」，在出生時就存在？",
+            options: ["頸椎與腰椎", "胸椎與薦椎", "頸椎與胸椎", "腰椎與薦椎"],
+            correctAnswer: "胸椎與薦椎",
+            explanation: "胸椎與薦椎的後凸曲線是為了容納臟器，出生時即存在，稱為初級曲線。"
+          },
+          {
+            id: 3,
+            question: "理想站姿下的重力線 (Line of Gravity) 在腰椎區域通常通過何處？",
+            options: ["椎體前方", "椎體後方 (通過棘突)", "穿過椎體或稍偏後", "通過橫突"],
+            correctAnswer: "穿過椎體或稍偏後",
+            explanation: "在腰椎，重力線通常稍微穿過椎體後側或落在凹側後方，產生伸直力矩，需腹肌對抗以維持穩定（視個別姿勢微調，但主要產生伸直力矩）。"
+          },
+          {
+            id: 4,
+            question: "脊柱的功能單位 (Functional Unit) 或稱運動節段 (Motion Segment) 是由什麼組成？",
+            options: ["單一塊脊椎骨", "兩塊相鄰椎骨及其間的軟組織", "整個脊柱", "五塊腰椎"],
+            correctAnswer: "兩塊相鄰椎骨及其間的軟組織",
+            explanation: "運動節段包含相鄰的兩塊椎骨、椎間盤、以及連接它們的韌帶與關節囊，是脊柱活動的基本單位。"
+          },
+
+          // 骨骼結構 (Osteology - General)
+          {
+            id: 5,
+            question: "連接椎體 (Body) 與後方椎弓 (Arch) 的骨骼結構是？",
+            options: ["椎板 (Lamina)", "椎弓根 (Pedicle)", "橫突 (Transverse process)", "棘突 (Spinous process)"],
+            correctAnswer: "椎弓根 (Pedicle)",
+            explanation: "椎弓根是連接前方巨大椎體與後方椎弓結構的橋樑，也是傳遞力量的重要路徑。"
+          },
+          {
+            id: 6,
+            question: "椎孔 (Vertebral foramen) 形成的管道主要容納什麼結構？",
+            options: ["脊髓 (Spinal cord)", "脊神經根", "椎動脈", "前縱韌帶"],
+            correctAnswer: "脊髓 (Spinal cord)",
+            explanation: "連續的椎孔形成脊椎管 (Spinal canal)，主要功能是保護脊髓。"
+          },
+          {
+            id: 7,
+            question: "小面關節 (Facet joint) 或稱 Z 關節 (Zygapophyseal joint) 屬於哪種關節類型？",
+            options: ["軟骨結合", "平面滑液關節 (Plane synovial joint)", "球窩關節", "樞紐關節"],
+            correctAnswer: "平面滑液關節 (Plane synovial joint)",
+            explanation: "小面關節由上下關節突組成，具有滑膜與關節囊，屬於平面滑液關節。"
+          },
+
+          // 頸椎 (Cervical Spine)
+          {
+            id: 8,
+            question: "C1 頸椎又稱為寰椎 (Atlas)，其解剖特徵為何？",
+            options: ["有很大的棘突", "沒有椎體 (Body)", "沒有橫突", "有明顯的齒狀突"],
+            correctAnswer: "沒有椎體 (Body)",
+            explanation: "C1 呈現環狀，沒有椎體與棘突，負責支撐頭顱。"
+          },
+          {
+            id: 9,
+            question: "C2 樞椎 (Axis) 最顯著的特徵是擁有什麼結構，作為 C1 旋轉的軸心？",
+            options: ["齒狀突 (Dens / Odontoid process)", "巨大的橫突孔", "分叉的棘突", "乳突"],
+            correctAnswer: "齒狀突 (Dens / Odontoid process)",
+            explanation: "齒狀突向上突入 C1 的環中，形成寰樞關節的旋轉軸心。"
+          },
+          {
+            id: 10,
+            question: "典型頸椎 (C3-C6) 的棘突 (Spinous process) 通常呈現什麼形狀？",
+            options: ["長且向下傾斜", "短且分叉 (Bifid)", "厚實且呈板狀", "退化消失"],
+            correctAnswer: "短且分叉 (Bifid)",
+            explanation: "典型頸椎的棘突短且末端分叉，供肌肉韌帶附著。"
+          },
+          {
+            id: 11,
+            question: "橫突孔 (Transverse foramen) 是頸椎特有的構造，其內有什麼通過？",
+            options: ["脊髓", "椎動脈 (Vertebral artery)", "頸動脈", "迷走神經"],
+            correctAnswer: "椎動脈 (Vertebral artery)",
+            explanation: "椎動脈穿過 C6-C1 的橫突孔，向上供應腦部血液。"
+          },
+          {
+            id: 12,
+            question: "鉤椎關節 (Uncovertebral joints) 或稱 Luschka 關節，位於頸椎何處？",
+            options: ["椎體後外側緣", "棘突之間", "小面關節內側", "椎弓根上"],
+            correctAnswer: "椎體後外側緣",
+            explanation: "頸椎椎體上表面側緣有鉤突 (Uncinate process)，與上方椎體形成鉤椎關節，增加穩定性並限制側彎。"
+          },
+          {
+            id: 13,
+            question: "頸椎小面關節 (Facet joints) 的排列角度大約與水平面呈多少度？",
+            options: ["0度", "45度", "90度", "15度"],
+            correctAnswer: "45度",
+            explanation: "頸椎小面關節約呈 45 度，介於水平與額狀面之間，允許全方向的活動度。"
+          },
+          {
+            id: 14,
+            question: "「點頭」動作主要發生在哪個關節？",
+            options: ["寰枕關節 (AO joint)", "寰樞關節 (AA joint)", "C2-C3", "C7-T1"],
+            correctAnswer: "寰枕關節 (AO joint)",
+            explanation: "AO 關節主要負責屈曲/伸直（點頭動作）。"
+          },
+          {
+            id: 15,
+            question: "頸椎旋轉動作約有一半 (50%) 發生在哪個單一關節？",
+            options: ["寰枕關節 (AO joint)", "寰樞關節 (AA joint)", "C3-C4", "C5-C6"],
+            correctAnswer: "寰樞關節 (AA joint)",
+            explanation: "C1 繞著 C2 的齒狀突旋轉，提供了頸部約 40-50% 的總旋轉角度。"
+          },
+
+          // 胸椎 (Thoracic Spine)
+          {
+            id: 16,
+            question: "胸椎的棘突 (Spinous process) 特徵為何？",
+            options: ["短且水平", "長且向下傾斜，像疊瓦一樣", "寬大且厚實", "末端分叉"],
+            correctAnswer: "長且向下傾斜，像疊瓦一樣",
+            explanation: "胸椎棘突長且向下傾斜明顯，限制了胸椎的伸直活動。"
+          },
+          {
+            id: 17,
+            question: "胸椎活動度相對較小，主要受限於什麼結構？",
+            options: ["肋骨架 (Rib cage)", "椎間盤太薄", "前縱韌帶", "肌肉太緊"],
+            correctAnswer: "肋骨架 (Rib cage)",
+            explanation: "肋骨與胸椎及胸骨連接形成剛性的胸廓，大幅限制了胸椎的活動度以保護臟器。"
+          },
+          {
+            id: 18,
+            question: "胸椎小面關節主要位於哪個平面，利於側彎但限制屈伸？",
+            options: ["水平面", "矢狀面", "額狀面 (Frontal plane)", "斜面"],
+            correctAnswer: "額狀面 (Frontal plane)",
+            explanation: "胸椎小面關節接近額狀面排列，理論上利於側彎，但受肋骨限制，實際活動度皆有限。"
+          },
+          {
+            id: 19,
+            question: "肋骨頭 (Rib head) 與胸椎椎體形成的關節稱為？",
+            options: ["肋橫突關節", "肋椎關節 (Costovertebral joint)", "胸肋關節", "小面關節"],
+            correctAnswer: "肋椎關節 (Costovertebral joint)",
+            explanation: "肋骨頭通常與兩個相鄰椎體及椎間盤連接，形成肋椎關節。"
+          },
+
+          // 腰椎 (Lumbar Spine)
+          {
+            id: 20,
+            question: "腰椎椎體 (Vertebral body) 的大小相較於頸胸椎為何？",
+            options: ["最小", "中等", "最大且寬厚", "無明顯差異"],
+            correctAnswer: "最大且寬厚",
+            explanation: "腰椎需承受上半身重量，故椎體最為巨大寬厚。"
+          },
+          {
+            id: 21,
+            question: "腰椎小面關節主要排列於哪個平面，有利於屈伸但限制旋轉？",
+            options: ["水平面", "矢狀面 (Sagittal plane)", "額狀面", "任意平面"],
+            correctAnswer: "矢狀面 (Sagittal plane)",
+            explanation: "腰椎小面關節接近矢狀面 (接近 90 度)，這允許大量屈伸，但像門擋一樣限制了旋轉。"
+          },
+          {
+            id: 22,
+            question: "乳突 (Mammillary process) 位於腰椎的何處？",
+            options: ["橫突尖端", "上關節突後緣", "棘突末端", "椎體前方"],
+            correctAnswer: "上關節突後緣",
+            explanation: "乳突是多裂肌 (Multifidus) 的附著點，位於上關節突的後緣。"
+          },
+          {
+            id: 23,
+            question: "L5 椎體通常呈現什麼形狀以適應薦椎傾斜角？",
+            options: ["楔形 (Wedge-shaped)，前高後低", "方形", "圓柱形", "楔形，前低後高"],
+            correctAnswer: "楔形 (Wedge-shaped)，前高後低",
+            explanation: "L5 椎體前方較高，形成楔形，以適應薦椎基底的傾斜，維持腰椎前凸。"
+          },
+          {
+            id: 24,
+            question: "腰椎前凸 (Lordosis) 的角度通常約為？",
+            options: ["10-20度", "40-50度", "70-80度", "0度"],
+            correctAnswer: "40-50度",
+            explanation: "正常的腰椎前凸角度約在 40-50 度之間。"
+          },
+
+          // 椎間盤 (Intervertebral Disc)
+          {
+            id: 25,
+            question: "椎間盤的核心結構，富含水分與蛋白多醣的是？",
+            options: ["纖維環 (Annulus fibrosus)", "髓核 (Nucleus pulposus)", "軟骨終板", "前縱韌帶"],
+            correctAnswer: "髓核 (Nucleus pulposus)",
+            explanation: "髓核位於中央，含水量高 (70-90%)，負責分散壓力。"
+          },
+          {
+            id: 26,
+            question: "纖維環 (Annulus fibrosus) 的纖維排列呈什麼狀，以抵抗多方向的張力？",
+            options: ["垂直排列", "同心圓層狀且交叉排列 (Lamellar)", "隨機排列", "水平排列"],
+            correctAnswer: "同心圓層狀且交叉排列 (Lamellar)",
+            explanation: "纖維環由多層同心圓組成，每層膠原纖維方向交錯約 65 度，能有效抵抗旋轉與扭力。"
+          },
+          {
+            id: 27,
+            question: "椎間盤在一天之中高度會發生什麼變化？",
+            options: ["早上最高，晚上變矮", "早上最矮，晚上變高", "維持不變", "隨機變化"],
+            correctAnswer: "早上最高，晚上變矮",
+            explanation: "白天因重力負重，髓核水分會被擠出，導致晚上身高變矮；夜間平躺時水分回流。"
+          },
+          {
+            id: 28,
+            question: "椎間盤最主要的營養供應來源是？",
+            options: ["直接血液灌流", "擴散作用 (Diffusion)", "淋巴循環", "神經傳導"],
+            correctAnswer: "擴散作用 (Diffusion)",
+            explanation: "成人椎間盤幾乎無血管，主要依賴終板的擴散作用獲取營養，活動與壓力變化有助於此過程。"
+          },
+
+          // 韌帶系統 (Ligaments)
+          {
+            id: 29,
+            question: "富含彈性蛋白 (Elastin)，呈現黃色，連接相鄰椎板 (Lamina) 的韌帶是？",
+            options: ["前縱韌帶", "後縱韌帶", "黃韌帶 (Ligamentum flavum)", "棘間韌帶"],
+            correctAnswer: "黃韌帶 (Ligamentum flavum)",
+            explanation: "黃韌帶富含彈性纖維，提供持續的張力以協助脊柱伸直並防止關節囊夾擠。"
+          },
+          {
+            id: 30,
+            question: "主要限制脊柱過度伸直 (Extension) 的韌帶是？",
+            options: ["前縱韌帶 (ALL)", "後縱韌帶 (PLL)", "棘上韌帶", "黃韌帶"],
+            correctAnswer: "前縱韌帶 (ALL)",
+            explanation: "前縱韌帶位於椎體前方，寬且強韌，是唯一主要限制過度伸直的脊柱韌帶。"
+          },
+          {
+            id: 31,
+            question: "後縱韌帶 (PLL) 在哪個區域變窄，增加了椎間盤向後外側突出的風險？",
+            options: ["頸椎區", "胸椎區", "腰椎區", "薦椎區"],
+            correctAnswer: "腰椎區",
+            explanation: "後縱韌帶在腰椎區域明顯變窄，對後外側的支撐力較弱，是椎間盤突出常見位置。"
+          },
+          {
+            id: 32,
+            question: "棘上韌帶 (Supraspinous ligament) 在頸椎區域特化並增厚成為什麼？",
+            options: ["項韌帶 (Ligamentum nuchae)", "橫韌帶", "翼狀韌帶", "黃韌帶"],
+            correctAnswer: "項韌帶 (Ligamentum nuchae)",
+            explanation: "項韌帶是強韌的中線結構，提供頸部肌肉附著並限制頸椎屈曲。"
+          },
+
+          // 運動學與力學 (Kinematics & Biomechanics)
+          {
+            id: 33,
+            question: "當脊柱進行屈曲 (Flexion) 時，髓核 (Nucleus) 傾向往哪個方向移動？",
+            options: ["前方", "後方", "側方", "不動"],
+            correctAnswer: "後方",
+            explanation: "屈曲時椎體前方靠近，擠壓髓核使其向後方移動（這也是彎腰搬重物易受傷的原因）。"
+          },
+          {
+            id: 34,
+            question: "根據 Fryette 的脊柱力學，在腰椎與胸椎的「中立位」下，側彎通常伴隨哪個方向的旋轉？",
+            options: ["同側旋轉", "對側旋轉 (Contralateral)", "不旋轉", "向前滑動"],
+            correctAnswer: "對側旋轉 (Contralateral)",
+            explanation: "Type I 力學（中立位）：側彎與旋轉方向相反（例如向左側彎伴隨向右旋轉）。"
+          },
+          {
+            id: 35,
+            question: "脊柱小面關節的「閉鎖位置 (Close-packed position)」通常是？",
+            options: ["完全屈曲", "完全伸直 (Extension)", "側彎", "旋轉"],
+            correctAnswer: "完全伸直 (Extension)",
+            explanation: "伸直時小面關節面接觸最緊密，關節囊與韌帶通常處於鎖定狀態（除了屈曲肌群被拉長外）。"
+          },
+          {
+            id: 36,
+            question: "薦髂關節 (SI Joint) 的主要功能是？",
+            options: ["提供大量活動度", "傳遞重量並減震 (Stress relief)", "產生主動動作", "保護脊髓"],
+            correctAnswer: "傳遞重量並減震 (Stress relief)",
+            explanation: "SI Joint 活動度極小，主要用於將上半身重量穩定傳遞至骨盆與下肢，並吸收地面反作用力。"
+          },
+          {
+            id: 37,
+            question: "腰椎前凸過度 (Hyperlordosis) 通常與骨盆的什麼姿勢有關？",
+            options: ["骨盆後傾", "骨盆前傾 (Anterior pelvic tilt)", "骨盆側移", "骨盆旋轉"],
+            correctAnswer: "骨盆前傾 (Anterior pelvic tilt)",
+            explanation: "骨盆前傾會帶動腰椎向前凸出，常見於屈髖肌緊繃或腹肌無力者。"
+          },
+          {
+            id: 38,
+            question: "「脊椎滑脫 (Spondylolisthesis)」最常發生在哪個節段？",
+            options: ["C1-C2", "T12-L1", "L5-S1", "L1-L2"],
+            correctAnswer: "L5-S1",
+            explanation: "L5-S1 承受極大的剪力 (Shear force)，是滑脫最常見的位置。"
+          },
+
+          // 肌肉與神經 (Muscles & Nerves)
+          {
+            id: 39,
+            question: "胸鎖乳突肌 (SCM) 雙側同時收縮的主要動作是？",
+            options: ["頸部伸直", "下頸椎屈曲與上頸椎伸直 (Protrusion)", "單純旋轉", "側彎"],
+            correctAnswer: "下頸椎屈曲與上頸椎伸直 (Protrusion)",
+            explanation: "SCM 雙側收縮會造成下頸椎屈曲，但因力線關係會使上頸椎/頭部伸直，形成類似烏龜探頭的動作。"
+          },
+          {
+            id: 40,
+            question: "斜角肌 (Scalenes) 肥大或緊繃最可能壓迫什麼結構？",
+            options: ["頸動脈", "臂神經叢 (Brachial plexus)", "脊髓", "迷走神經"],
+            correctAnswer: "臂神經叢 (Brachial plexus)",
+            explanation: "前、中斜角肌之間的間隙有臂神經叢與鎖骨下動脈通過，緊繃易造成胸廓出口症候群 (TOS)。"
+          },
+          {
+            id: 41,
+            question: "下列哪群肌肉被稱為脊柱的「深層穩定肌」或動態韌帶？",
+            options: ["豎脊肌 (Erector spinae)", "多裂肌 (Multifidus) 與迴旋肌 (Rotatores)", "腹直肌", "闊背肌"],
+            correctAnswer: "多裂肌 (Multifidus) 與迴旋肌 (Rotatores)",
+            explanation: "橫突棘肌群 (Transversospinalis) 位於深層，跨越節段少，富含肌梭，主要負責節段間的微調與穩定。"
+          },
+          {
+            id: 42,
+            question: "豎脊肌 (Erector Spinae) 由外而內的排列順序是？",
+            options: ["棘肌、最長肌、髂肋肌", "髂肋肌 (Iliocostalis)、最長肌 (Longissimus)、棘肌 (Spinalis)", "最長肌、髂肋肌、棘肌", "棘肌、髂肋肌、最長肌"],
+            correctAnswer: "髂肋肌 (Iliocostalis)、最長肌 (Longissimus)、棘肌 (Spinalis)",
+            explanation: "口訣：I Love Spine (由外向內)。"
+          },
+          {
+            id: 43,
+            question: "腰方肌 (Quadratus Lumborum) 單側收縮的主要動作是？",
+            options: ["腰椎屈曲", "腰椎伸直", "腰椎側彎 (Lateral flexion) 或 提髖 (Hip hiking)", "腰椎旋轉"],
+            correctAnswer: "腰椎側彎 (Lateral flexion) 或 提髖 (Hip hiking)",
+            explanation: "腰方肌連接髂骨脊與腰椎/第12肋，是強力的側彎肌，開放鍊下可提髖。"
+          },
+          {
+            id: 44,
+            question: "腹內斜肌 (Internal Oblique) 與腹外斜肌 (External Oblique) 在旋轉動作上的關係是？",
+            options: ["同側腹內斜肌與對側腹外斜肌協同工作", "同側腹內斜肌與同側腹外斜肌協同", "兩者拮抗", "只由腹外斜肌負責"],
+            correctAnswer: "同側腹內斜肌與對側腹外斜肌協同工作",
+            explanation: "例如向左旋轉，需左側腹內斜肌與右側腹外斜肌共同收縮。"
+          },
+          {
+            id: 45,
+            question: "Valsalva Maneuver (閉氣用力) 可以增加什麼壓力以輔助脊柱穩定？",
+            options: ["胸內壓", "腹內壓 (Intra-abdominal pressure)", "顱內壓", "椎間盤壓力"],
+            correctAnswer: "腹內壓 (Intra-abdominal pressure)",
+            explanation: "透過收縮腹肌與橫膈膜並閉氣，增加腹內壓，形成剛性圓柱體效應，減輕脊柱負荷。"
+          },
+          {
+            id: 46,
+            question: "頸長肌 (Longus Colli) 的主要功能是？",
+            options: ["頸部強力伸直", "深層頸部屈曲與穩定，矯正頸椎前凸", "頸部旋轉", "上抬肩胛骨"],
+            correctAnswer: "深層頸部屈曲與穩定，矯正頸椎前凸",
+            explanation: "頸長肌位於椎體前方深層，能拉直頸椎前凸，是重要的頸椎核心穩定肌。"
+          },
+          {
+            id: 47,
+            question: "椎間盤突出若壓迫到 L5 神經根，通常會影響哪個動作的肌力？",
+            options: ["膝伸直 (L3-4)", "足背屈 (Dorsiflexion) / 大拇指伸直", "足蹠屈 (S1)", "髖屈曲 (L2)"],
+            correctAnswer: "足背屈 (Dorsiflexion) / 大拇指伸直",
+            explanation: "L5 神經根主要支配脛前肌與伸拇長肌，受損常導致垂足或大拇指無力。"
+          },
+          {
+            id: 48,
+            question: "下列何者不是「核心肌群 (Core muscles)」的主要成員？",
+            options: ["腹橫肌", "多裂肌", "橫膈膜", "胸大肌"],
+            correctAnswer: "胸大肌",
+            explanation: "核心肌群通常指構成腹腔與脊柱周圍的深層穩定肌群，胸大肌屬於上肢帶肌肉。"
+          },
+          {
+            id: 49,
+            question: "脊柱側彎 (Scoliosis) 的定義通常包含？",
+            options: ["只有側向位移", "側向位移伴隨椎體旋轉", "只有前後位移", "椎體骨折"],
+            correctAnswer: "側向位移伴隨椎體旋轉",
+            explanation: "真正的脊柱側彎是三維的變形，側彎通常伴隨椎體向凸側旋轉，導致肋骨隆起 (Rib hump)。"
+          },
+          {
+            id: 50,
+            question: "薦椎點頭 (Sacral Nutation) 是指薦椎基底 (Base) 往哪個方向移動？",
+            options: ["前方/下方", "後方/上方", "側方", "旋轉"],
+            correctAnswer: "前方/下方",
+            explanation: "Nutation (點頭) 是薦椎基底向前下移動，相對髂骨向後，這增加了 SI 關節的穩定性 (Close-packed)。"
+          }
+        ];
+
+        // --- 全局變數 ---
+        let appState = 'home'; // home, quiz, result
+        let questions = [];
+        let currentQIndex = 0;
+        let userAnswers = {}; // { questionId: selectedOptionString }
+        let timeLeft = 3600; // 1 hour
+        let timerInterval = null;
+        let score = 0;
+
+        // --- 輔助函式 ---
+        const shuffleArray = (array) => {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        };
+
+        const generateQuizSession = () => {
+            const selectedQuestions = shuffleArray(FULL_QUESTION_BANK).slice(0, 10);
+            return selectedQuestions.map(q => {
+                const shuffledOptions = shuffleArray(q.options);
+                return {
+                    ...q,
+                    shuffledOptions
+                };
+            });
+        };
+
+        const formatTime = (seconds) => {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        };
+
+        // --- 邏輯控制 ---
+
+        function startQuiz() {
+            questions = generateQuizSession();
+            currentQIndex = 0;
+            userAnswers = {};
+            timeLeft = 3600;
+            score = 0;
+            appState = 'quiz';
+            
+            // 啟動計時器
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                } else {
+                    submitQuiz();
+                }
+            }, 1000);
+
+            render();
+        }
+
+        function handleOptionSelect(option) {
+            const currentQ = questions[currentQIndex];
+            userAnswers[currentQ.id] = option;
+            render(); // 重新渲染以顯示選中狀態
+        }
+
+        function nextQuestion() {
+            if (currentQIndex < questions.length - 1) {
+                currentQIndex++;
+                render();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQIndex > 0) {
+                currentQIndex--;
+                render();
+            }
+        }
+
+        function submitQuiz() {
+            clearInterval(timerInterval);
+            let correctCount = 0;
+            questions.forEach(q => {
+                if (userAnswers[q.id] === q.correctAnswer) {
+                    correctCount++;
+                }
+            });
+            score = correctCount;
+            appState = 'result';
+            render();
+            // 滾動到頂部
+            window.scrollTo(0, 0);
+        }
+
+        function updateTimerDisplay() {
+            const timerEl = document.getElementById('timer-display');
+            if (timerEl) {
+                timerEl.textContent = formatTime(timeLeft);
+                if (timeLeft < 60) {
+                    timerEl.classList.add('text-red-400', 'animate-pulse');
+                    timerEl.classList.remove('text-teal-400');
+                }
+            }
+        }
+
+        // --- 渲染 (View) ---
+
+        function render() {
+            const app = document.getElementById('app');
+            app.innerHTML = ''; // 清空
+
+            if (appState === 'home') {
+                renderHome(app);
+            } else if (appState === 'quiz') {
+                renderQuiz(app);
+            } else if (appState === 'result') {
+                renderResult(app);
+            }
+            // 初始化圖示
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+
+        function renderHome(container) {
+            container.innerHTML = `
+                <div class="min-h-screen flex flex-col items-center justify-center p-4 fade-in">
+                    <div class="max-w-2xl w-full bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 text-center space-y-8">
+                        <div class="space-y-4">
+                            <div class="flex justify-center">
+                                <i data-lucide="book-open" class="w-16 h-16 text-blue-400"></i>
+                            </div>
+                            <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-teal-400 py-2">
+                                SMR讀書會<br />脊椎主題測驗
+                            </h1>
+                            <p class="text-slate-400 text-lg">
+                                隨機10題測驗，作答時間60分鐘
+                            </p>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left bg-slate-900/50 p-6 rounded-xl border border-slate-700">
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-blue-500/20 p-2 rounded-lg text-blue-400"><i data-lucide="clock" class="w-5 h-5"></i></div>
+                                <div>
+                                    <p class="text-sm text-slate-500">限時</p>
+                                    <p class="font-semibold">1 小時</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-teal-500/20 p-2 rounded-lg text-teal-400"><i data-lucide="book-open" class="w-5 h-5"></i></div>
+                                <div>
+                                    <p class="text-sm text-slate-500">題數</p>
+                                    <p class="font-semibold">10 題</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="bg-purple-500/20 p-2 rounded-lg text-purple-400"><i data-lucide="award" class="w-5 h-5"></i></div>
+                                <div>
+                                    <p class="text-sm text-slate-500">及格</p>
+                                    <p class="font-semibold">60 分</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="startQuiz()" class="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-500 hover:to-teal-500 text-white text-2xl font-bold py-4 rounded-xl transition-all transform hover:scale-[1.02] active:scale-95 shadow-lg shadow-blue-500/25">
+                            開始測驗
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderQuiz(container) {
+            const currentQ = questions[currentQIndex];
+            const progress = ((currentQIndex + 1) / questions.length) * 100;
+            const isLastQuestion = currentQIndex === questions.length - 1;
+
+            let optionsHtml = currentQ.shuffledOptions.map((option) => {
+                const isSelected = userAnswers[currentQ.id] === option;
+                const buttonClass = isSelected 
+                    ? 'bg-blue-600/20 border-blue-500 text-blue-100 shadow-[0_0_15px_rgba(59,130,246,0.3)]' 
+                    : 'bg-slate-700/50 border-transparent hover:bg-slate-700 hover:border-slate-600 text-slate-300';
+                
+                const circleClass = isSelected
+                    ? 'border-blue-400 bg-blue-500 text-white'
+                    : 'border-slate-500 text-transparent group-hover:border-slate-400';
+
+                return `
+                    <button onclick="handleOptionSelect('${option.replace(/'/g, "\\'")}')" class="w-full text-left p-5 rounded-xl text-xl transition-all duration-200 border-2 flex items-center group ${buttonClass}">
+                        <div class="w-8 h-8 rounded-full border-2 mr-4 flex items-center justify-center flex-shrink-0 transition-colors ${circleClass}">
+                            ${isSelected ? '<div class="w-3 h-3 bg-white rounded-full"></div>' : ''}
+                        </div>
+                        ${option}
+                    </button>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="min-h-screen flex flex-col items-center p-4 md:p-8 fade-in">
+                    <!-- Header -->
+                    <div class="w-full max-w-3xl flex justify-between items-center mb-6 bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
+                        <div class="text-slate-400 font-medium">
+                            第 <span class="text-blue-400 text-xl font-bold">${currentQIndex + 1}</span> / ${questions.length} 題
+                        </div>
+                        <div class="flex items-center font-mono text-xl font-bold text-teal-400">
+                            <i data-lucide="clock" class="w-6 h-6 mr-2"></i>
+                            <span id="timer-display">${formatTime(timeLeft)}</span>
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="w-full max-w-3xl h-2 bg-slate-800 rounded-full mb-8 overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-blue-500 to-teal-400 transition-all duration-300 ease-out" style="width: ${progress}%"></div>
+                    </div>
+
+                    <!-- Question Card -->
+                    <div class="w-full max-w-3xl bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-6 md:p-10 flex-grow flex flex-col relative overflow-hidden">
+                        <!-- Background decoration -->
+                        <div class="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl"></div>
+                        
+                        <h2 class="text-2xl md:text-3xl font-bold leading-relaxed mb-8 text-slate-100 relative z-10">
+                            ${currentQ.question}
+                        </h2>
+
+                        <div class="space-y-4 relative z-10 flex-grow">
+                            ${optionsHtml}
+                        </div>
+
+                        <!-- Navigation -->
+                        <div class="flex justify-between items-center mt-8 pt-8 border-t border-slate-700 relative z-10">
+                            <button onclick="prevQuestion()" ${currentQIndex === 0 ? 'disabled' : ''} class="flex items-center px-6 py-3 rounded-lg text-lg font-medium transition-colors ${currentQIndex === 0 ? 'text-slate-600 cursor-not-allowed' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}">
+                                <i data-lucide="chevron-left" class="w-6 h-6 mr-1"></i> 上一題
+                            </button>
+
+                            ${isLastQuestion ? `
+                                <button onclick="submitQuiz()" class="flex items-center px-8 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white rounded-lg text-lg font-bold shadow-lg shadow-green-500/25 transition-all transform hover:scale-105">
+                                    繳交試卷 <i data-lucide="check-circle" class="w-6 h-6 ml-2"></i>
+                                </button>
+                            ` : `
+                                <button onclick="nextQuestion()" class="flex items-center px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-lg font-medium transition-colors">
+                                    下一題 <i data-lucide="chevron-right" class="w-6 h-6 ml-1"></i>
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderResult(container) {
+            let reviewHtml = questions.map((q, idx) => {
+                const userAnswer = userAnswers[q.id];
+                const isCorrect = userAnswer === q.correctAnswer;
+                
+                return `
+                    <div class="bg-slate-800 rounded-xl border border-slate-700 overflow-hidden">
+                        <div class="p-4 flex items-start gap-4 ${isCorrect ? 'bg-green-500/10' : 'bg-red-500/10'}">
+                            <div class="mt-1 flex-shrink-0">
+                                ${isCorrect 
+                                    ? '<i data-lucide="check-circle" class="w-6 h-6 text-green-400"></i>' 
+                                    : '<i data-lucide="x-circle" class="w-6 h-6 text-red-400"></i>'}
+                            </div>
+                            <div class="flex-grow">
+                                <h4 class="text-lg font-bold text-slate-200 mb-4">
+                                    <span class="text-slate-500 mr-2">${idx + 1}.</span>
+                                    ${q.question}
+                                </h4>
+                                
+                                <div class="space-y-2 mb-4">
+                                    <div class="p-3 rounded-lg flex items-center ${isCorrect ? 'bg-green-500/20 text-green-200' : 'bg-red-500/20 text-red-200'}">
+                                        <span class="text-sm font-bold w-16 opacity-70">您的回答</span>
+                                        <span>${userAnswer || "(未作答)"}</span>
+                                    </div>
+                                    ${!isCorrect ? `
+                                    <div class="p-3 rounded-lg bg-green-500/20 text-green-200 flex items-center">
+                                        <span class="text-sm font-bold w-16 opacity-70">正確答案</span>
+                                        <span>${q.correctAnswer}</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+
+                                <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
+                                    <p class="text-sm text-blue-300 font-bold mb-1">解析：</p>
+                                    <p class="text-slate-300 leading-relaxed">${q.explanation}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="min-h-screen bg-slate-900 text-slate-100 p-4 md:p-8 fade-in">
+                    <div class="max-w-4xl mx-auto space-y-8">
+                        
+                        <!-- Score Card -->
+                        <div class="bg-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-8 text-center relative overflow-hidden">
+                            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-teal-400"></div>
+                            <h2 class="text-3xl font-bold text-slate-300 mb-2">測驗結果</h2>
+                            <div class="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-400 to-teal-400 my-6">
+                                ${score * 10} <span class="text-2xl text-slate-500 font-medium">分</span>
+                            </div>
+                            <p class="text-xl text-slate-400 mb-8">
+                                答對 ${score} / ${questions.length} 題
+                            </p>
+                            <button onclick="startQuiz()" class="inline-flex items-center px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-colors shadow-lg shadow-blue-500/25">
+                                <i data-lucide="rotate-ccw" class="w-5 h-5 mr-2"></i> 重新測驗
+                            </button>
+                        </div>
+
+                        <!-- Detailed Review -->
+                        <div class="space-y-6">
+                            <h3 class="text-2xl font-bold text-slate-300 px-2 border-l-4 border-blue-500">詳細解析</h3>
+                            ${reviewHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- 初始化 ---
+        render();
+
+    </script>
+</body>
+</html>
